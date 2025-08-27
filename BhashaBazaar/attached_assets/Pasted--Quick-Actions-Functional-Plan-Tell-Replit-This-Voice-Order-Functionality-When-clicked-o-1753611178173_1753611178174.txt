@@ -1,0 +1,98 @@
+ "Quick Actions" Functional Plan (Tell Replit This 👇)
+🔴 Voice Order
+Functionality:
+When clicked, open a modal/pop-up with a voice input interface (microphone icon + record button).
+
+User Flow:
+
+Vendor clicks Voice Order
+
+Microphone opens → user speaks (e.g., “5 kilo tamatar, 2 aloo”)
+
+Use AssemblyAI or Whisper API to convert speech → text
+
+Show converted text below for confirmation
+
+User can tap “✅ Confirm” or “🔁 Re-record”
+
+Submit order (dummy flow or store it in local DB / Firebase)
+
+Replit Prompt:
+
+plaintext
+Copy
+Edit
+When user clicks "Voice Order", open a modal with mic icon and voice-to-text functionality using Whisper or AssemblyAI. Display converted order text with Confirm and Re-record buttons. Store in order history or show alert “Order placed successfully!” for now.
+🟣 Nearby Sellers
+Functionality:
+Show a map or list of nearby vendors who joined “Apna Thela” group in that locality.
+
+User Flow:
+
+Vendor taps “Nearby Sellers”
+
+App asks permission to access location
+
+Display list (or map pins) of sellers nearby with:
+
+Store name
+
+Product categories
+
+Distance (optional)
+
+Replit Prompt:
+
+plaintext
+Copy
+Edit
+On clicking "Nearby Sellers", fetch geolocation and show a list (or map if time allows) of dummy vendors (name + category + distance). Keep UI simple, colorful cards or scrollable list. If user denies location, show fallback: "Enter pincode to search nearby sellers."
+🟡 Calculator
+Functionality:
+Launch an embedded calculator that helps vendors do simple total + discount calculations (e.g., mandi price x quantity).
+
+User Flow:
+
+Vendor taps “Calculator”
+
+Opens simple UI:
+
+Input: Price per item
+
+Input: Quantity
+
+Optional: Discount field
+
+Output: Total
+
+Replit Prompt:
+
+plaintext
+Copy
+Edit
+When "Calculator" is clicked, open a card or modal with three fields: price per item, quantity, discount (optional). Show real-time calculated total below. UI must be touch-friendly with large buttons.
+🔵 Help
+Functionality:
+Direct user to WhatsApp chat with your support bot/team.
+
+User Flow:
+
+Vendor taps “Help”
+
+Opens external WhatsApp with prefilled message
+
+Replit Prompt:
+
+plaintext
+Copy
+Edit
+On click of "Help", redirect user to WhatsApp via link:
+https://wa.me/<YourNumber>?text=Namaste%20team%2C%20mujhe%20madad%20chahiye
+Open in new tab. Optional: Add tooltip saying “Chat with Apna Thela support on WhatsApp”.
+🌟 Bonus: Smooth UI Touches for Replit
+Add this to your prompt:
+
+plaintext
+Copy
+Edit
+Ensure all modals/buttons have gentle transitions. Use consistent border-radius, shadows, and color theme

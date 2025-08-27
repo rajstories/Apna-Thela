@@ -1,0 +1,41 @@
+Build a **mobile-friendly HTML/CSS/JavaScript web component** that simulates a dummy WhatsApp-like support chat interface for my MVP.
+
+Requirements:
+
+1. Add a "Help & Support" button on the main page. When clicked, it should open a full-page modal or popup chat window (styled like WhatsApp).
+2. The chat interface should include:
+   - A header with "Apna Thela Support"
+   - Chat bubbles (left = support, right = user)
+   - A text input area with:
+     - Typing bar
+     - Send button
+     - Microphone icon (to simulate voice input via speech-to-text)
+
+3. Enable **speech-to-text support** using Web Speech API for Hindi and English (auto detect or toggle).
+
+4. When user types or speaks a message, simulate smart bot replies to common vendor queries:
+   - 🧾 Stock: “Aapka stock khatam hone wala hai. Abhi order karein yahan se: [Order Link]”
+   - 🔐 Login issue: “Login mein dikkat hai? Kripya browser cache clear karke dubaara try karein.”
+   - 📦 Order status: “Aapka order delivery ke liye nikal chuka hai. Track karein: [Tracking Link]”
+   - 💬 Others: “Hamare agent jald aapko message karenge. Meanwhile, aap yahan bhi contact kar sakte hain: wa.me/91XXXXXXXXXX”
+
+5. Auto-reply must **match keyword-based triggers** (e.g., "stock", "login", "order", "payment", "problem", etc.). Replies should be in **same language** as user input — Hindi or English.
+
+6. Add 1-2 second delay before bot replies (for realism).
+
+7. No backend needed — everything should run locally (no server). This is for a hackathon MVP demo.
+
+8. At the bottom, show:  
+   > "For real-time help, chat with us on WhatsApp: wa.me/91XXXXXXXXXX"
+
+9. Style the interface neatly like WhatsApp:
+   - Green header
+   - Rounded chat bubbles
+   - Mobile-first responsive view
+   - Use minimal but clean fonts and spacing
+
+10. Everything should work inside a single HTML file, so I can run it on Replit or share as demo instantly.
+
+Bonus (Optional): Include emoji support and send message on Enter key too.
+
+Please give full working code in one file.
