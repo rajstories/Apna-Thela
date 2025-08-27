@@ -1,0 +1,37 @@
+# This is a comment, Git will ignore it.
+
+# 1. Dependencies
+# This folder contains thousands of downloaded files.
+# It can be very large and is easily re-created by anyone who downloads the project.
+node_modules/
+
+# 2. Build Output
+# This folder is auto-generated when you "build" your project for production.
+# We only need to track the source code, not the final built files.
+dist/
+
+# 3. Environment Variables & Secrets
+# This file holds secret keys, passwords, and API keys.
+# NEVER upload this to a public repository.
+.env
+.env.local
+.env.*.local
+
+# 4. Log files
+# Log files are created during testing or when errors happen. They are not part of the main code.
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# 5. IDE & Environment-specific files
+# These are settings files for specific code editors or online environments (like Replit).
+# They are unique to each user and don't belong in the project history.
+.replit
+.config
+.local
+
+# 6. Operating System files
+# Temporary files created by Mac and Windows.
+.DS_Store
+Thumbs.db
