@@ -413,8 +413,47 @@ export default function BuyIngredients() {
                   </div>
                 </div>
 
-                {/* Add to Cart */}
-                <div className="flex items-center justify-between">
+                {/* Mobile-Optimized Shopping Controls */}
+                <div className="space-y-4">
+                  {/* Quantity Selector - Centered Layout */}
+                  <div className="flex items-center justify-center space-x-4 bg-gray-50 rounded-lg py-3 px-4">
+                    <span className="text-sm font-medium text-gray-700">
+                      {language === 'hi' ? 'मात्रा:' : 'Qty:'}
+                    </span>
+                    <div className="flex items-center space-x-2">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => handleQuantityChange(product.id, Math.max(1, (quantities[product.id] || 1) - 1))}
+                        className="h-9 w-9 p-0"
+                      >
+                        <Minus className="h-4 w-4" />
+                      </Button>
+                      <Input
+                        type="number"
+                        value={quantities[product.id] || 1}
+                        onChange={(e) => handleQuantityChange(product.id, Math.max(1, parseInt(e.target.value) || 1))}
+                        className="w-16 text-center h-9"
+                        min="1"
+                      />
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => handleQuantityChange(product.id, (quantities[product.id] || 1) + 1)}
+                        className="h-9 w-9 p-0"
+                      >
+                        <Plus className="h-4 w-4" />
+                      </Button>
+                    </div>
+                    <div className="text-right">
+                      <span className="text-sm font-bold text-saffron-600">
+                        ₹{(parseFloat(product.pricePerUnit) * (quantities[product.id] || 1)).toFixed(2)}
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Equal-Width Action Buttons */}
+                  <div className="grid grid-cols-2 gap-3">
                   <div className="flex items-center space-x-2">
                     <Button
                       variant="outline"
@@ -504,6 +543,7 @@ export default function BuyIngredients() {
                       </div>
                     )}
                   </div>
+                </div>
                 </div>
               </CardContent>
             </Card>
