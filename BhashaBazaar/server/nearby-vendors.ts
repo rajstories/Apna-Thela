@@ -261,6 +261,8 @@ export function registerNearbyVendorsRoutes(app: Express) {
     try {
       let filteredVendors: NearbyVendor[] = [];
       
+      console.log('API called with params:', { lat, lng, pincode, area });
+      
       // Try to get real data from Google Places API first
       if (lat && lng && typeof lat === 'string' && typeof lng === 'string') {
         const userLat = parseFloat(lat);
@@ -269,15 +271,24 @@ export function registerNearbyVendorsRoutes(app: Express) {
         console.log('Searching for nearby businesses using Google Places API...');
         const googlePlaces = await searchNearbyBusinesses(userLat, userLng);
         
+        console.log(`Google Places returned ${googlePlaces.length} results`);
+        
         if (googlePlaces.length > 0) {
           console.log(`Found ${googlePlaces.length} businesses from Google Places`);
           filteredVendors = googlePlaces.map(place => convertGooglePlaceToVendor(place, userLat, userLng));
         } else {
           console.log('No results from Google Places API, using fallback data');
-          filteredVendors = [...sampleNearbyVendors];
+          filteredVendors = sampleNearbyVendors.map(vendor => ({
+            ...vendor,
+            distance: vendor.coordinates ? 
+              Math.round(calculateDistance(userLat, userLng, vendor.coordinates.lat, vendor.coordinates.lng) * 1000) : 
+              vendor.distance
+          }));
+          console.log(`Fallback data has ${filteredVendors.length} vendors`);
         }
       } else {
         // Fallback to sample data
+        console.log('No lat/lng provided, using sample data');
         filteredVendors = [...sampleNearbyVendors];
       }
       
@@ -310,21 +321,18 @@ export function registerNearbyVendorsRoutes(app: Express) {
         }
       }
       
-      // If using fallback data, calculate distance and apply additional filters
-      if (filteredVendors === sampleNearbyVendors && lat && lng) {
-        const userLat = parseFloat(lat);
-        const userLng = parseFloat(lng);
+      // Ensure we always have some vendors to show
+      if (filteredVendors.length === 0) {
+        console.log('No vendors found after filtering, adding sample data');
+        const userLat = lat ? parseFloat(lat as string) : null;
+        const userLng = lng ? parseFloat(lng as string) : null;
         
-        filteredVendors = filteredVendors.map(vendor => {
-          if (vendor.coordinates) {
-            const distance = calculateDistance(
-              userLat, userLng, 
-              vendor.coordinates.lat, vendor.coordinates.lng
-            );
-            return { ...vendor, distance: Math.round(distance * 1000) }; // Convert to meters
-          }
-          return vendor;
-        });
+        filteredVendors = sampleNearbyVendors.map(vendor => ({
+          ...vendor,
+          distance: (vendor.coordinates && userLat && userLng) ? 
+            Math.round(calculateDistance(userLat, userLng, vendor.coordinates.lat, vendor.coordinates.lng) * 1000) : 
+            vendor.distance
+        }));
       }
       
       // Sort by distance (closest first)
@@ -341,18 +349,3 @@ export function registerNearbyVendorsRoutes(app: Express) {
   });
 }
 
-// Helper function to calculate distance between two coordinates (in meters)
-function calculateDistance(lat1: number, lng1: number, lat2: number, lng2: number): number {
-  const R = 6371e3; // Earth's radius in meters
-  const φ1 = lat1 * Math.PI/180;
-  const φ2 = lat2 * Math.PI/180;
-  const Δφ = (lat2-lat1) * Math.PI/180;
-  const Δλ = (lng2-lng1) * Math.PI/180;
-
-  const a = Math.sin(Δφ/2) * Math.sin(Δφ/2) +
-          Math.cos(φ1) * Math.cos(φ2) *
-          Math.sin(Δλ/2) * Math.sin(Δλ/2);
-  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
-
-  return R * c;
-}

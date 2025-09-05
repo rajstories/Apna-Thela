@@ -543,7 +543,7 @@ export default function Home() {
 
       {/* Footer */}
       <div className="text-center py-2 px-4">
-        <p className="text-xs text-gray-400">Built by Raj @2025</p>
+        <p className="text-xs text-gray-400">Built by FusionX</p>
       </div>
 
       {/* Bottom padding for navigation */}
