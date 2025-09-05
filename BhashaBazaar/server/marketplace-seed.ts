@@ -117,7 +117,7 @@ export async function seedMarketplaceData() {
         pricePerUnit: '28.00',
         availability: true,
         description: 'Fresh red onions, grade A quality',
-        onlineStoreUrl: 'https://www.bigbasket.com/pd/10000020/fresho-onion-1-kg/?nc=as&t_pos_sec=1&t_pos_item=1&t_s=Onion',
+        onlineStoreUrl: 'https://www.bigbasket.com/ps/?q=onion',
       },
       {
         supplierId: '550e8400-e29b-41d4-a716-446655440001',
@@ -129,7 +129,7 @@ export async function seedMarketplaceData() {
         pricePerUnit: '22.00',
         availability: true,
         description: 'Fresh potatoes, perfect for cooking',
-        onlineStoreUrl: 'https://www.bigbasket.com/pd/10000021/fresho-potato-1-kg/?nc=as&t_pos_sec=1&t_pos_item=2&t_s=Potato',
+        onlineStoreUrl: 'https://www.bigbasket.com/ps/?q=potato',
       },
       {
         supplierId: '550e8400-e29b-41d4-a716-446655440001',
@@ -141,7 +141,7 @@ export async function seedMarketplaceData() {
         pricePerUnit: '35.00',
         availability: true,
         description: 'Fresh red tomatoes, vine ripened',
-        onlineStoreUrl: 'https://www.bigbasket.com/pd/10000022/fresho-tomato-regular-1-kg/?nc=as&t_pos_sec=1&t_pos_item=3&t_s=Tomato',
+        onlineStoreUrl: 'https://www.bigbasket.com/ps/?q=tomato',
       },
 
       // Zepto Quick - Vegetables
@@ -155,7 +155,7 @@ export async function seedMarketplaceData() {
         pricePerUnit: '65.00',
         availability: true,
         description: 'Fresh green bell peppers',
-        onlineStoreUrl: 'https://www.zeptonow.com/pn/capsicum-green-shimla-mirch-500-g/vpid/a1b2c3d4e5f6',
+        onlineStoreUrl: 'https://www.zeptonow.com/search?query=capsicum',
       },
       {
         supplierId: '550e8400-e29b-41d4-a716-446655440002',
@@ -167,7 +167,7 @@ export async function seedMarketplaceData() {
         pricePerUnit: '120.00',
         availability: true,
         description: 'Fresh ginger root, organic',
-        onlineStoreUrl: 'https://www.zeptonow.com/pn/ginger-adrak-200-g/vpid/g1h2i3j4k5l6',
+        onlineStoreUrl: 'https://www.zeptonow.com/search?query=ginger',
       },
 
       // BlinkIt Express - Spices
@@ -181,7 +181,7 @@ export async function seedMarketplaceData() {
         pricePerUnit: '180.00',
         availability: true,
         description: 'Pure turmeric powder, 1kg pack',
-        onlineStoreUrl: 'https://blinkit.com/prn/everest-turmeric-haldi-powder-1-kg/prid/157563',
+        onlineStoreUrl: 'https://blinkit.com/s/?q=turmeric%20powder',
       },
       {
         supplierId: '550e8400-e29b-41d4-a716-446655440003',
@@ -193,7 +193,7 @@ export async function seedMarketplaceData() {
         pricePerUnit: '220.00',
         availability: true,
         description: 'Spicy red chili powder, premium quality',
-        onlineStoreUrl: 'https://blinkit.com/prn/everest-red-chilli-lal-mirch-powder-1-kg/prid/157564',
+        onlineStoreUrl: 'https://blinkit.com/s/?q=red%20chili%20powder',
       },
       {
         supplierId: '550e8400-e29b-41d4-a716-446655440003',
@@ -205,7 +205,7 @@ export async function seedMarketplaceData() {
         pricePerUnit: '160.00',
         availability: true,
         description: 'Fresh ground coriander powder',
-        onlineStoreUrl: 'https://blinkit.com/prn/everest-coriander-dhania-powder-1-kg/prid/157565',
+        onlineStoreUrl: 'https://blinkit.com/s/?q=coriander%20powder',
       },
 
       // Instamart Supplies - Oil
@@ -219,7 +219,7 @@ export async function seedMarketplaceData() {
         pricePerUnit: '140.00',
         availability: true,
         description: 'Pure sunflower cooking oil, 1L bottle',
-        onlineStoreUrl: 'https://www.swiggy.com/instamart/search?custom_back=true&query=sunflower%20oil&tag=oil',
+        onlineStoreUrl: 'https://www.swiggy.com/instamart/search?query=sunflower%20oil',
       },
       {
         supplierId: '550e8400-e29b-41d4-a716-446655440004',
@@ -231,7 +231,7 @@ export async function seedMarketplaceData() {
         pricePerUnit: '165.00',
         availability: true,
         description: 'Pure mustard oil, cold pressed',
-        onlineStoreUrl: 'https://www.swiggy.com/instamart/search?custom_back=true&query=mustard%20oil&tag=oil',
+        onlineStoreUrl: 'https://www.swiggy.com/instamart/search?query=mustard%20oil',
       },
 
       // JioMart Fresh - Dairy
@@ -245,7 +245,7 @@ export async function seedMarketplaceData() {
         pricePerUnit: '65.00',
         availability: true,
         description: 'Fresh full cream milk, 1L packet',
-        onlineStoreUrl: 'https://www.jiomart.com/p/groceries/mother-dairy-full-cream-milk-1-l/590003350',
+        onlineStoreUrl: 'https://www.jiomart.com/search/milk',
       },
       {
         supplierId: '550e8400-e29b-41d4-a716-446655440005',
@@ -257,7 +257,7 @@ export async function seedMarketplaceData() {
         pricePerUnit: '380.00',
         availability: true,
         description: 'Fresh cottage cheese, soft and creamy',
-        onlineStoreUrl: 'https://www.jiomart.com/p/groceries/mother-dairy-fresh-paneer-200-g/590003351',
+        onlineStoreUrl: 'https://www.jiomart.com/search/paneer',
       },
 
       // Amazon Fresh - Meat
@@ -271,7 +271,7 @@ export async function seedMarketplaceData() {
         pricePerUnit: '220.00',
         availability: true,
         description: 'Fresh chicken curry cut, cleaned and ready',
-        onlineStoreUrl: 'https://www.amazon.in/Fresh-Chicken-Curry-Without-Skin/dp/B075FWGC9L',
+        onlineStoreUrl: 'https://www.amazon.in/s?k=fresh+chicken+curry+cut',
       },
       {
         supplierId: '550e8400-e29b-41d4-a716-446655440006',
@@ -283,7 +283,7 @@ export async function seedMarketplaceData() {
         pricePerUnit: '680.00',
         availability: true,
         description: 'Fresh mutton curry cut, premium quality',
-        onlineStoreUrl: 'https://www.amazon.in/Fresh-Mutton-Goat-Curry-Without/dp/B075FWH8VX',
+        onlineStoreUrl: 'https://www.amazon.in/s?k=fresh+mutton+curry+cut',
       }
     ];
 
