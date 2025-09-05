@@ -15,7 +15,7 @@ import { useSpeech } from '@/hooks/use-speech';
 import { useToast } from '@/hooks/use-toast';
 import { getTranslation, getRandomTagline } from '@/lib/i18n';
 import { voiceShoppingService } from '@/lib/voice-shopping';
-import { ShoppingCart, Package, Mic, MapPin, Calculator, Headphones, Globe, User, Volume2, Wallet, Check, RotateCcw } from 'lucide-react';
+import { ShoppingCart, Package, Mic, MapPin, Calculator, MessageCircle, Globe, User, Volume2, Wallet, Check, RotateCcw } from 'lucide-react';
 import ApnaThelaLogo from '@/assets/apna-thela-logo.svg';
 import { useLocation } from 'wouter';
 import type { InventoryItem } from '@shared/schema';
@@ -222,7 +222,7 @@ export default function Home() {
       action: () => setShowCalculator(true),
     },
     {
-      icon: Headphones,
+      icon: MessageCircle,
       label: getTranslation(language, 'quickActions.help'),
       sublabel: getTranslation(language, 'quickActions.helpEn'),
       color: 'bg-blue-100 text-blue-600',
@@ -288,7 +288,7 @@ export default function Home() {
             <Button
               variant="ghost"
               size="icon"
-              className="text-white hover:bg-white hover:bg-opacity-20"
+              className="text-white hover:bg-white hover:bg-opacity-30 rounded-full transition-all duration-200 hover:scale-110"
               onClick={() => setShowLanguageModal(true)}
             >
               <Globe className="w-5 h-5" />
