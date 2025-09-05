@@ -1188,6 +1188,79 @@ export function registerRoutes(app: Express) {
     }
   });
 
+  // ElevenLabs Text-to-Speech API endpoint
+  app.post("/api/text-to-speech", async (req, res) => {
+    try {
+      const { text, voice_id, language, voice_settings } = req.body;
+      
+      if (!text || !voice_id) {
+        return res.status(400).json({ error: 'Text and voice_id are required' });
+      }
+
+      const apiKey = process.env.ELEVENLABS_API_KEY;
+      if (!apiKey) {
+        return res.status(500).json({ error: 'ElevenLabs API key not configured' });
+      }
+
+      console.log(`🎤 Generating speech for "${text}" using voice ${voice_id} (${language})`);
+
+      const elevenLabsResponse = await fetch(`https://api.elevenlabs.io/v1/text-to-speech/${voice_id}`, {
+        method: 'POST',
+        headers: {
+          'Accept': 'audio/mpeg',
+          'Content-Type': 'application/json',
+          'xi-api-key': apiKey,
+        },
+        body: JSON.stringify({
+          text: text,
+          model_id: 'eleven_multilingual_v2',
+          voice_settings: voice_settings || {
+            stability: 0.75,
+            similarity_boost: 0.85,
+            style: 0.0,
+            use_speaker_boost: true
+          }
+        })
+      });
+
+      if (!elevenLabsResponse.ok) {
+        const errorText = await elevenLabsResponse.text();
+        console.error('ElevenLabs API error:', errorText);
+        return res.status(elevenLabsResponse.status).json({ 
+          error: 'ElevenLabs API error', 
+          details: errorText 
+        });
+      }
+
+      // Stream the audio back to client
+      res.set({
+        'Content-Type': 'audio/mpeg',
+        'Cache-Control': 'public, max-age=3600', // Cache for 1 hour
+      });
+
+      const audioBuffer = await elevenLabsResponse.arrayBuffer();
+      res.send(Buffer.from(audioBuffer));
+
+    } catch (error) {
+      console.error('Text-to-speech error:', error);
+      res.status(500).json({ error: 'Failed to generate speech' });
+    }
+  });
+
+  // Check ElevenLabs API status
+  app.get("/api/text-to-speech/status", async (req, res) => {
+    try {
+      const apiKey = process.env.ELEVENLABS_API_KEY;
+      res.json({ 
+        available: !!apiKey,
+        service: 'ElevenLabs',
+        languages: ['hi', 'en', 'bn', 'mr', 'ta', 'te']
+      });
+    } catch (error) {
+      res.json({ available: false });
+    }
+  });
+
   return app;
 }
 

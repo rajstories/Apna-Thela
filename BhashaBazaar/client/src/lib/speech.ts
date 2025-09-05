@@ -6,13 +6,27 @@ declare global {
   }
 }
 
+import { elevenLabsService } from './elevenlabs';
+
 export class SpeechService {
   private recognition: any = null;
   private synthesis: SpeechSynthesis | null = null;
+  private elevenLabsAvailable: boolean = false;
 
   constructor() {
     this.initializeRecognition();
     this.initializeSynthesis();
+    this.checkElevenLabsAvailability();
+  }
+
+  private async checkElevenLabsAvailability() {
+    try {
+      this.elevenLabsAvailable = await elevenLabsService.isAvailable();
+      console.log(`🎤 ElevenLabs service: ${this.elevenLabsAvailable ? 'Available' : 'Not available'}`);
+    } catch (error) {
+      console.error('Error checking ElevenLabs availability:', error);
+      this.elevenLabsAvailable = false;
+    }
   }
 
   private initializeRecognition() {
@@ -52,13 +66,50 @@ export class SpeechService {
     });
   }
 
-  speak(text: string, language: string = 'hi-IN'): Promise<void> {
+  async speak(text: string, language: string = 'hi-IN'): Promise<void> {
+    // Try ElevenLabs first for better quality
+    if (this.elevenLabsAvailable) {
+      try {
+        console.log(`🎤 Using ElevenLabs for ${language}: "${text}"`);
+        const audioUrl = await elevenLabsService.textToSpeech(text, language);
+        
+        return new Promise((resolve, reject) => {
+          const audio = new Audio(audioUrl);
+          audio.onended = () => {
+            URL.revokeObjectURL(audioUrl); // Clean up blob URL
+            resolve();
+          };
+          audio.onerror = (error) => {
+            console.error('Audio playback error:', error);
+            URL.revokeObjectURL(audioUrl);
+            // Fallback to browser synthesis on error
+            this.fallbackToNativeSpeech(text, language).then(resolve).catch(reject);
+          };
+          audio.play().catch(error => {
+            console.error('Audio play error:', error);
+            URL.revokeObjectURL(audioUrl);
+            // Fallback to browser synthesis on error
+            this.fallbackToNativeSpeech(text, language).then(resolve).catch(reject);
+          });
+        });
+      } catch (error) {
+        console.warn('ElevenLabs failed, falling back to native speech:', error);
+        return this.fallbackToNativeSpeech(text, language);
+      }
+    } else {
+      // Fallback to native speech synthesis
+      return this.fallbackToNativeSpeech(text, language);
+    }
+  }
+
+  private fallbackToNativeSpeech(text: string, language: string = 'hi-IN'): Promise<void> {
     return new Promise((resolve, reject) => {
       if (!this.synthesis) {
         reject(new Error('Speech synthesis not supported'));
         return;
       }
 
+      console.log(`🎤 Using native speech for ${language}: "${text}"`);
       const utterance = new SpeechSynthesisUtterance(text);
       utterance.lang = this.getSynthesisLanguage(language);
       
@@ -446,30 +497,63 @@ export class SpeechService {
     return null;
   }
 
-  // Generate contextual voice confirmations in detected language
+  // Generate contextual voice confirmations in detected language with enhanced ElevenLabs support
   getVoiceConfirmationMessage(language: string, itemName?: string): string {
     const messages: Record<string, string> = {
       'hi': itemName 
-        ? `${itemName} की कीमतों की तुलना शुरू कर रहे हैं। पूरा ऐप हिंदी में बदल गया।`
-        : 'हिंदी चुनी गई - पूरा ऐप हिंदी में बदल गया।',
-      'en': itemName 
-        ? `Starting price comparison for ${itemName}. Language switched to English.`
-        : 'English selected - App language switched to English.',
-      'bn': itemName 
-        ? `${itemName} এর দাম তুলনা শুরু হচ্ছে। ভাষা বাংলায় পরিবর্তিত হয়েছে।`
-        : 'বাংলা নির্বাচিত - অ্যাপের ভাষা বাংলায় পরিবর্তিত হয়েছে।',
-      'mr': itemName 
-        ? `${itemName} च्या किमतींची तुलना सुरू करत आहे। भाषा मराठीत बदलली.`
-        : 'मराठी निवडली - अॅपची भाषा मराठीत बदलली.',
-      'ta': itemName 
-        ? `${itemName} விலை ஒப்பீடு தொடங்குகிறது. மொழி தமிழுக்கு மாற்றப்பட்டது.`
-        : 'தமிழ் தேர்ந்தெடுக்கப்பட்டது - பயன்பாட்டின் மொழி தமிழுக்கு மாற்றப்பட்டது.',
-      'te': itemName 
-        ? `${itemName} ధరల పోలిక ప్రారంభమవుతోంది. భాష తెలుగులోకి మార్చబడింది.`
-        : 'తెలుగు ఎంచుకోబడింది - యాప్ భాష తెలుగులోకి మార్చబడింది.'
+        ? `${itemName} के लिए सबसे अच्छे रेट मिल गए हैं। क्या आप और कुछ जानना चाहते हैं?`
+        : 'आपकी बात समझ गई। किस चीज़ का भाव चाहिए?',
+      'en': itemName
+        ? `Found the best rates for ${itemName}. What else can I help you with?`
+        : 'I heard you clearly. Which item would you like to check prices for?',
+      'bn': itemName
+        ? `${itemName} এর সেরা দাম পাওয়া গেছে। আর কিছু জানতে চান?`
+        : 'আপনার কথা বুঝেছি। কোন জিনিসের দাম জানতে চান?',
+      'mr': itemName
+        ? `${itemName} साठी सर्वोत्तम दर मिळाले आहेत। आणखी काही मदत हवी आहे का?`
+        : 'तुमचे म्हणणे समजले. कोणत्या वस्तूचे दर हवेत?',
+      'ta': itemName
+        ? `${itemName} க்கான சிறந்த விலைகள் கிடைத்துள்ளன. வேறு ஏதாவது உதவி தேவையா?`
+        : 'உங்கள் பேச்சு புரிந்தது. எந்த பொருளின் விலை தெரிந்து கொள்ள விரும்புகிறீர்கள்?',
+      'te': itemName
+        ? `${itemName} కోసం మంచి రేట్లు దొరికాయి। మరేమైనా సహాయం కావాలా?`
+        : 'మీ మాట అర్థమైంది. ఏ వస్తువు రేటు కావాలి?'
     };
     
     return messages[language] || messages['en'];
+  }
+
+  // Add voice gender preference support for better user experience
+  async speakWithGender(text: string, language: string = 'hi-IN', preferredGender: 'male' | 'female' = 'female'): Promise<void> {
+    if (this.elevenLabsAvailable) {
+      try {
+        console.log(`🎤 Using ElevenLabs (${preferredGender}) for ${language}: "${text}"`);
+        const audioUrl = await elevenLabsService.textToSpeech(text, language, preferredGender);
+        
+        return new Promise((resolve, reject) => {
+          const audio = new Audio(audioUrl);
+          audio.onended = () => {
+            URL.revokeObjectURL(audioUrl);
+            resolve();
+          };
+          audio.onerror = (error) => {
+            console.error('Audio playback error:', error);
+            URL.revokeObjectURL(audioUrl);
+            this.fallbackToNativeSpeech(text, language).then(resolve).catch(reject);
+          };
+          audio.play().catch(error => {
+            console.error('Audio play error:', error);
+            URL.revokeObjectURL(audioUrl);
+            this.fallbackToNativeSpeech(text, language).then(resolve).catch(reject);
+          });
+        });
+      } catch (error) {
+        console.warn('ElevenLabs failed, falling back to native speech:', error);
+        return this.fallbackToNativeSpeech(text, language);
+      }
+    } else {
+      return this.fallbackToNativeSpeech(text, language);
+    }
   }
 
   private getRecognitionLanguage(language: string): string {
