@@ -169,10 +169,29 @@ export class ElevenLabsService {
   // Check if ElevenLabs is available (has API key)
   async isAvailable(): Promise<boolean> {
     try {
-      const response = await fetch('/api/text-to-speech/status');
+      const response = await fetch('/api/text-to-speech/status', {
+        headers: {
+          'Accept': 'application/json',
+          'Content-Type': 'application/json'
+        }
+      });
+      
+      if (!response.ok) {
+        console.error('🔧 ElevenLabs status check failed:', response.status, response.statusText);
+        return false;
+      }
+
+      const contentType = response.headers.get('content-type');
+      if (!contentType || !contentType.includes('application/json')) {
+        console.error('🔧 ElevenLabs status endpoint returned non-JSON:', contentType);
+        return false;
+      }
+
       const data = await response.json();
+      console.log('🔧 ElevenLabs availability check result:', data);
       return data.available === true;
-    } catch {
+    } catch (error) {
+      console.error('🔧 ElevenLabs availability check error:', error);
       return false;
     }
   }

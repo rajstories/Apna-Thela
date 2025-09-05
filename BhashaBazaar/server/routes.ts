@@ -1251,13 +1251,17 @@ export function registerRoutes(app: Express) {
   app.get("/api/text-to-speech/status", async (req, res) => {
     try {
       const apiKey = process.env.ELEVENLABS_API_KEY;
-      res.json({ 
+      console.log('🔧 ElevenLabs API status check - API Key exists:', !!apiKey);
+      const response = { 
         available: !!apiKey,
         service: 'ElevenLabs',
         languages: ['hi', 'en', 'bn', 'mr', 'ta', 'te']
-      });
+      };
+      console.log('🔧 Sending response:', response);
+      res.status(200).json(response);
     } catch (error) {
-      res.json({ available: false });
+      console.error('🔧 Error in status endpoint:', error);
+      res.status(200).json({ available: false });
     }
   });
 
