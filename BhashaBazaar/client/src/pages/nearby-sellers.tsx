@@ -11,6 +11,7 @@ import { useLanguage } from '@/hooks/use-language';
 import { useToast } from '@/hooks/use-toast';
 import { ArrowLeft, MapPin, Phone, Star, Store, User, Navigation, Search, Shield, CheckCircle, Filter, Wifi } from 'lucide-react';
 import { useLocation } from 'wouter';
+import { QuickOrderModal } from '@/components/quick-order-modal';
 import type { VendorProfile } from '@shared/schema';
 
 interface VendorWithDistance extends VendorProfile {
@@ -18,6 +19,11 @@ interface VendorWithDistance extends VendorProfile {
   stockHighlights: {
     item: string;
     status: 'full' | 'low' | 'out';
+  }[];
+  quickOrderItems?: {
+    item: string;
+    price: number;
+    available: boolean;
   }[];
 }
 
@@ -34,6 +40,8 @@ export default function NearbySellers() {
   const [languageFilter, setLanguageFilter] = useState<string>('all');
   const [itemFilter, setItemFilter] = useState<string>('all');
   const [searchQuery, setSearchQuery] = useState('');
+  const [selectedVendorForOrder, setSelectedVendorForOrder] = useState<VendorWithDistance | null>(null);
+  const [isQuickOrderModalOpen, setIsQuickOrderModalOpen] = useState(false);
 
   // Always prioritize location permission request on first visit
   useEffect(() => {
@@ -609,7 +617,10 @@ export default function NearbySellers() {
                     variant="outline" 
                     size="sm"
                     className={vendor.websiteUrl ? 'col-span-2 h-8 text-xs' : 'col-span-1 h-8 text-xs'}
-                    onClick={() => navigate(`/buy-ingredients?vendor=${vendor.id}`)}
+                    onClick={() => {
+                      setSelectedVendorForOrder(vendor);
+                      setIsQuickOrderModalOpen(true);
+                    }}
                   >
                     <Store className="w-3 h-3 mr-1" />
                     {language === 'hi' ? 'ऑर्डर करें' : 'Quick Order'}
@@ -620,6 +631,16 @@ export default function NearbySellers() {
           ))
         )}
       </div>
+      
+      {/* Quick Order Modal */}
+      <QuickOrderModal
+        vendor={selectedVendorForOrder}
+        isOpen={isQuickOrderModalOpen}
+        onClose={() => {
+          setIsQuickOrderModalOpen(false);
+          setSelectedVendorForOrder(null);
+        }}
+      />
     </div>
   );
 }
