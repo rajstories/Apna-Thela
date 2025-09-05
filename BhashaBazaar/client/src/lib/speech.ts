@@ -198,19 +198,14 @@ export class SpeechService {
     
     // Patterns for quantity and units in multiple languages
     const quantityPatterns = [
-      // English patterns
-      /(\d+(?:\.\d+)?)\s*(kg|kilo|kilogram|grams?|g|lbs?|pounds?|piece|pieces|pcs|packet|packets|bottle|bottles|liter|liters?|l)\s+(.+)/i,
-      /(\d+(?:\.\d+)?)\s+(.+?)\s*(kg|kilo|kilogram|grams?|g|lbs?|pounds?|piece|pieces|pcs|packet|packets|bottle|bottles|liter|liters?|l)/i,
+      // Specific Hindi patterns with units: quantity + unit + product
+      /(\d+(?:\.\d+)?)\s+(किलो|किग्रा|ग्राम|पैकेट|बोतल|लीटर|पीस)\s+(.+)/i,
+      /(एक|दो|तीन|चार|पांच|पाँच|छह|सात|आठ|नौ|दस|ek|do|teen|char|panch|paanch|cheh|saat|aath|nau|das)\s+(किलो|किग्रा|ग्राम|पैकेट|बोतल|लीटर|पीस)\s+(.+)/i,
       
-      // Hindi patterns  
-      /(\d+(?:\.\d+)?)\s*(किलो|किग्रा|ग्राम|पैकेट|बोतल|लीटर|पीस)\s+(.+)/i,
-      /(\d+(?:\.\d+)?)\s+(.+?)\s*(किलो|किग्रा|ग्राम|पैकेट|बोतल|लीटर|पीस)/i,
+      // English patterns: quantity + unit + product
+      /(\d+(?:\.\d+)?)\s+(kg|kilo|kilogram|grams?|g|lbs?|pounds?|piece|pieces|pcs|packet|packets|bottle|bottles|liter|liters?|l)\s+(.+)/i,
       
-      // Number words in Hindi
-      /(एक|दो|तीन|चार|पांच|पाँच|छह|सात|आठ|नौ|दस|ek|do|teen|char|panch|paanch|cheh|saat|aath|nau|das)\s*(किलो|किग्रा|ग्राम|पैकेट|बोतल|लीटर|पीस)\s+(.+)/i,
-      /(एक|दो|तीन|चार|पांच|पाँच|छह|सात|आठ|नौ|दस|ek|do|teen|char|panch|paanch|cheh|saat|aath|nau|das)\s+(.+?)\s*(किलो|किग्रा|ग्राम|पैकेट|बोतल|लीटर|पीस)/i,
-      
-      // Simple patterns without units (assume kg)
+      // Simple patterns without explicit units (assume kg)
       /(\d+(?:\.\d+)?)\s+(.+)/i,
       /(एक|दो|तीन|चार|पांच|पाँच|छह|सात|आठ|नौ|दस|ek|do|teen|char|panch|paanch|cheh|saat|aath|nau|das)\s+(.+)/i
     ];
@@ -247,43 +242,19 @@ export class SpeechService {
         let unit = 'kg'; // default unit
         let product: string;
         
-        if (match.length === 3) {
-          // Pattern: quantity + unit + product OR quantity + product + unit
-          const part1 = match[1];
-          const part2 = match[2];
-          const part3 = match[3] || '';
-          
-          // Try to determine which part is quantity, unit, and product
-          if (isNaN(Number(part1)) && (part1 in numberWords)) {
-            quantity = numberWords[part1];
-            if (part2 in unitNormalization) {
-              unit = unitNormalization[part2];
-              product = part3;
-            } else {
-              product = part2 + (part3 ? ' ' + part3 : '');
-            }
-          } else {
-            quantity = parseFloat(part1);
-            if (part2 in unitNormalization) {
-              unit = unitNormalization[part2];
-              product = part3;
-            } else {
-              product = part2 + (part3 ? ' ' + part3 : '');
-            }
-          }
-        } else if (match.length === 4) {
-          // Pattern: quantity + product + unit
-          const part1 = match[1];
-          const part2 = match[2];
-          const part3 = match[3];
+        if (match.length === 4) {
+          // Pattern: quantity + unit + product (the most common pattern)
+          const part1 = match[1]; // quantity
+          const part2 = match[2]; // unit
+          const part3 = match[3]; // product
           
           if (isNaN(Number(part1)) && (part1 in numberWords)) {
             quantity = numberWords[part1];
           } else {
             quantity = parseFloat(part1);
           }
-          product = part2;
-          unit = unitNormalization[part3] || part3;
+          unit = unitNormalization[part2] || part2;
+          product = part3;
         } else {
           // Simple pattern: quantity + product (assume kg)
           const part1 = match[1];
@@ -315,11 +286,11 @@ export class SpeechService {
     
     // First, check for direct English words (even in Devanagari script)
     const englishMappings: Record<string, string> = {
-      'potato': 'Potato', 'aloo': 'Potato', 'aalu': 'Potato', 'aaloo': 'Potato', 'alu': 'Potato', 'पोटैटो': 'Potato', 'पोटेटो': 'Potato',
-      'tomato': 'Tomato', 'टोमेटो': 'Tomato', 'टमाटो': 'Tomato',
-      'onion': 'Onion', 'ओनियन': 'Onion',
-      'ginger': 'Ginger', 'जिंजर': 'Ginger',
-      'garlic': 'Garlic', 'गार्लिक': 'Garlic',
+      'potato': 'Potato', 'aloo': 'Potato', 'aalu': 'Potato', 'aaloo': 'Potato', 'alu': 'Potato', 'पोटैटो': 'Potato', 'पोटेटो': 'Potato', 'आलू': 'Potato',
+      'tomato': 'Tomato', 'टोमेटो': 'Tomato', 'टमाटो': 'Tomato', 'tamatar': 'Tomato',
+      'onion': 'Onion', 'ओनियन': 'Onion', 'प्याज': 'Onion', 'pyaz': 'Onion', 'pyaaz': 'Onion',
+      'ginger': 'Ginger', 'जिंजर': 'Ginger', 'अदरक': 'Ginger', 'adrak': 'Ginger',
+      'garlic': 'Garlic', 'गार्लिक': 'Garlic', 'लहसुन': 'Garlic', 'lahsun': 'Garlic',
       'spinach': 'Spinach', 'स्पिनच': 'Spinach',
       'carrot': 'Carrot', 'कैरोट': 'Carrot',
       'cabbage': 'Cabbage', 'कैबेज': 'Cabbage',

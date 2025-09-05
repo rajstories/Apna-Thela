@@ -127,10 +127,17 @@ export default function Home() {
 
         // Auto-redirect after a short delay to show the success message
         setTimeout(() => {
-          window.open(result.redirectUrl, '_blank');
-          setShowVoiceOrderModal(false);
-          setOrderText('');
-          setOrderResult(null);
+          console.log('Redirecting to:', result.redirectUrl);
+          try {
+            window.open(result.redirectUrl, '_blank');
+            setShowVoiceOrderModal(false);
+            setOrderText('');
+            setOrderResult(null);
+          } catch (error) {
+            console.error('Failed to redirect:', error);
+            // Fallback: try assigning to window.location
+            window.location.href = result.redirectUrl!;
+          }
         }, 2000);
       } else {
         toast({
