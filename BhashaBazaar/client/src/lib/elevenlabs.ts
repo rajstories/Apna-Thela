@@ -19,22 +19,22 @@ export class ElevenLabsService {
   private languageVoices: Record<string, ElevenLabsVoice[]> = {
     'hi': [
       {
-        voice_id: 'Xb7hH8MSUJpSbSDYk0k2', // Adam (can handle Hindi well)
-        name: 'Priya',
+        voice_id: '21m00Tcm4TlvDq8ikWAM', // Rachel - excellent for Hindi
+        name: 'Kavya',
         language: 'Hindi',
         accent: 'Indian',
         gender: 'female',
         age: 'young_adult',
-        description: 'Clear Hindi female voice with authentic Indian accent'
+        description: 'Natural, warm Hindi female voice with perfect pronunciation'
       },
       {
-        voice_id: 'pNInz6obpgDQGcFmaJgB', // Charlie (multilingual)
+        voice_id: 'VR6AewLTigWG4xSOukaG', // Josh - great male voice for Hindi
         name: 'Arjun',
         language: 'Hindi',
         accent: 'Indian',
         gender: 'male',
-        age: 'middle_aged',
-        description: 'Warm Hindi male voice perfect for business communication'
+        age: 'young_adult',
+        description: 'Professional Hindi male voice with clear enunciation'
       }
     ],
     'en': [
