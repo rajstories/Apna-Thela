@@ -545,14 +545,14 @@ export default function NearbySellers() {
                 {/* Stock Highlights */}
                 <div className="mb-2">
                   <div className="flex flex-wrap gap-1">
-                    {vendor.stockHighlights.slice(0, 3).map((stock, index) => {
+                    {vendor.stockHighlights?.slice(0, 3)?.map((stock, index) => {
                       const badge = getStockStatusBadge(stock.status);
                       return (
                         <Badge key={index} className={`text-xs px-2 py-0.5 ${badge.color}`}>
                           {stock.item}: {badge.text}
                         </Badge>
                       );
-                    })}
+                    }) || []}
                   </div>
                 </div>
 
