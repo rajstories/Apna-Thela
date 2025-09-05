@@ -7,9 +7,10 @@ import { FloatingHelpButton } from '@/components/floating-help-button';
 import { GroupBuying } from '@/components/group-buying';
 import { useLanguage } from '@/hooks/use-language';
 import { getTranslation } from '@/lib/i18n';
-import { Phone, MapPin, Star, ShoppingCart, Package, Truck, CheckCircle, Clock, Plus, Minus, Filter, ArrowLeft, ExternalLink } from 'lucide-react';
+import { MapPin, Star, ShoppingCart, Package, Truck, CheckCircle, Clock, Plus, Minus, Filter, ArrowLeft, ExternalLink, TrendingDown } from 'lucide-react';
 import { useLocation } from 'wouter';
 import { useState } from 'react';
+import { BestDealsModal } from '@/components/best-deals-modal';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
@@ -35,6 +36,8 @@ export default function BuyIngredients() {
   const [selectedCity, setSelectedCity] = useState<string>('all');
   const [quantities, setQuantities] = useState<Record<string, number>>({});
   const [isCartOpen, setIsCartOpen] = useState(false);
+  const [bestDealsProduct, setBestDealsProduct] = useState<string | null>(null);
+  const [isBestDealsOpen, setIsBestDealsOpen] = useState(false);
 
   // Fetch marketplace products
   const { data: products = [], isLoading: isLoadingProducts, error } = useQuery<ProductWithSupplier[]>({
@@ -440,11 +443,14 @@ export default function BuyIngredients() {
                       <Button
                         variant="outline"
                         size="sm"
-                        onClick={() => window.location.href = `tel:${product.supplier.phone}`}
-                        className="flex-1"
+                        onClick={() => {
+                          setBestDealsProduct(getProductName(product));
+                          setIsBestDealsOpen(true);
+                        }}
+                        className="flex-1 bg-gradient-to-r from-yellow-50 to-orange-50 border-orange-200 hover:from-yellow-100 hover:to-orange-100"
                       >
-                        <Phone className="h-3 w-3 mr-1" />
-                        {getTranslation(language, 'common.call')}
+                        <TrendingDown className="h-3 w-3 mr-1 text-green-600" />
+                        {language === 'hi' ? '🎯 बेस्ट डील' : '🎯 Best Deals'}
                       </Button>
                       <Button
                         size="sm"
@@ -539,6 +545,16 @@ export default function BuyIngredients() {
       <FloatingHelpButton />
 
       <BottomNavigation />
+      
+      {/* Best Deals Modal */}
+      <BestDealsModal
+        productName={bestDealsProduct || ''}
+        isOpen={isBestDealsOpen}
+        onClose={() => {
+          setIsBestDealsOpen(false);
+          setBestDealsProduct(null);
+        }}
+      />
     </div>
   );
 }
