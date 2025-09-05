@@ -221,7 +221,7 @@ export default function BuyIngredients() {
   return (
     <div className="max-w-md mx-auto bg-white min-h-screen">
       {/* Header */}
-      <div className="bg-saffron-600 text-white p-4 sticky top-0 z-40">
+      <div className="bg-saffron-600 text-white p-4 fixed top-0 left-0 right-0 z-50 max-w-md mx-auto">
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-3">
             <Button
@@ -306,6 +306,9 @@ export default function BuyIngredients() {
           </Dialog>
         </div>
       </div>
+
+      {/* Spacing for fixed header */}
+      <div className="h-16"></div>
 
       {/* Filters */}
       <div className="p-4 bg-gray-50 space-y-3">
@@ -547,7 +550,7 @@ export default function BuyIngredients() {
                   </div>
                   <Button
                     size="sm"
-                    onClick={() => handleReorder(order.id)}
+                    onClick={() => handleReorder(order)}
                     className="bg-blue-600 hover:bg-blue-700"
                   >
                     {language === 'hi' ? 'फिर से ऑर्डर करें' : 'Reorder'}
@@ -572,7 +575,7 @@ export default function BuyIngredients() {
           setIsBestDealsOpen(false);
           setBestDealsProduct('');
         }}
-        productName={bestDealsProduct}
+        productName={bestDealsProduct || ''}
       />
     </div>
   );
