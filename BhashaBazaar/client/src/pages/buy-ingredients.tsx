@@ -413,7 +413,7 @@ export default function BuyIngredients() {
                   </div>
                 </div>
 
-                {/* Shopping Controls - Clean Mobile Layout */}
+                {/* Shopping Controls - Two Button Layout */}
                 <div className="space-y-3">
                   {/* Quantity Selector */}
                   <div className="flex items-center justify-center space-x-4 bg-gray-50 rounded-lg py-3 px-4">
@@ -468,22 +468,48 @@ export default function BuyIngredients() {
                         </span>
                       </div>
                     </Button>
-                  <div className="flex flex-col space-y-2">
-                    {/* Best Deals Button - Professional Style */}
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => {
-                        setBestDealsProduct(getProductName(product));
-                        setIsBestDealsOpen(true);
-                      }}
-                      className="w-full h-10 bg-gradient-to-r from-amber-50 to-orange-50 border-amber-300 hover:from-amber-100 hover:to-orange-100 hover:border-amber-400 transition-all duration-200 shadow-sm mb-2"
-                    >
-                      <TrendingDown className="h-4 w-4 mr-2 text-amber-600" />
-                      <span className="font-medium text-amber-700">
-                        {language === 'hi' ? '🎯 बेस्ट डील्स' : '🎯 Best Deals'}
-                      </span>
-                    </Button>
+                    {/* Buy Now Button - Right Side */}
+                    {product.onlineStoreUrl ? (
+                      <Button
+                        onClick={() => {
+                          window.open(product.onlineStoreUrl!, '_blank');
+                          toast({
+                            title: language === 'hi' ? '🛒 खरीदारी शुरू करें' : '🛒 Shopping Started',
+                            description: language === 'hi' 
+                              ? `${quantities[product.id] || 1} ${product.unit} की खरीदारी` 
+                              : `Shopping for ${quantities[product.id] || 1} ${product.unit}`,
+                          });
+                        }}
+                        className="h-12 bg-gradient-to-br from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 transition-all duration-200 shadow-sm"
+                      >
+                        <div className="flex flex-col items-center justify-center space-y-1 text-white">
+                          <ExternalLink className="h-4 w-4" />
+                          <span className="text-xs font-semibold">
+                            {language === 'hi' ? 'अभी खरीदें' : 
+                             language === 'bn' ? 'এখনই কিনুন' : 
+                             language === 'mr' ? 'आता खरेदী करा' : 
+                             language === 'ta' ? 'இপ্পোधু ভাঙ্কবুম્' : 
+                             language === 'te' ? 'ఇప్పుడు కొనండి' : 
+                             'Buy Now'}
+                          </span>
+                        </div>
+                      </Button>
+                    ) : (
+                      <Button
+                        onClick={() => handleAddToCart(product.id)}
+                        disabled={addToCartMutation.isPending}
+                        className="h-12 bg-gradient-to-br from-saffron-600 to-orange-600 hover:from-saffron-700 hover:to-orange-700 transition-all duration-200 shadow-sm"
+                      >
+                        <div className="flex flex-col items-center justify-center space-y-1 text-white">
+                          <ShoppingCart className="h-4 w-4" />
+                          <span className="text-xs font-semibold">
+                            {language === 'hi' ? 'कार्ट में डालें' : 'Add to Cart'}
+                          </span>
+                        </div>
+                      </Button>
+                    )}
+                  </div>
+                </div>
 
                     {/* Action Buttons Row */}
                     <div className="flex space-x-2">
