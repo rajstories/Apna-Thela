@@ -221,14 +221,14 @@ export default function BuyIngredients() {
   return (
     <div className="max-w-md mx-auto bg-white min-h-screen">
       {/* Header */}
-      <div className="bg-saffron-600 text-black p-4 fixed top-0 left-0 right-0 z-50 max-w-md mx-auto">
+      <div className="bg-gradient-to-r from-orange-500 to-orange-600 text-black p-4 fixed top-0 left-0 right-0 z-50 max-w-md mx-auto shadow-lg">
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-3">
             <Button
               variant="ghost"
               size="sm"
               onClick={() => navigate('/')}
-              className="text-black hover:bg-saffron-700"
+              className="text-black hover:bg-orange-700"
             >
               <ArrowLeft className="h-5 w-5" />
             </Button>
@@ -239,7 +239,7 @@ export default function BuyIngredients() {
           </div>
           <Dialog open={isCartOpen} onOpenChange={setIsCartOpen}>
             <DialogTrigger asChild>
-              <Button variant="ghost" size="sm" className="relative text-black hover:bg-saffron-700">
+              <Button variant="ghost" size="sm" className="relative text-black hover:bg-orange-700">
                 <ShoppingCart className="h-5 w-5" />
                 {cartItems.length > 0 && (
                   <Badge className="absolute -top-2 -right-2 h-5 w-5 rounded-full bg-red-500 text-xs">
@@ -308,10 +308,10 @@ export default function BuyIngredients() {
       </div>
 
       {/* Spacing for fixed header */}
-      <div className="h-16"></div>
+      <div className="h-20"></div>
 
       {/* Filters */}
-      <div className="p-4 bg-gray-50 space-y-3">
+      <div className="p-4 bg-gray-50 space-y-3 mt-2">
         <div className="flex space-x-2">
           <Select value={selectedCategory} onValueChange={setSelectedCategory}>
             <SelectTrigger className="flex-1">
