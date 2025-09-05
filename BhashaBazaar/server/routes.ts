@@ -242,66 +242,94 @@ export function registerRoutes(app: Express) {
   app.get("/api/nearby-vendors", async (req, res) => {
     try {
       const { lat, lng, pincode } = req.query;
+      console.log('=== NEARBY VENDORS API WORKING ===');
+      console.log('Request params:', { lat, lng, pincode });
       
-      let vendors;
-      
-      if (pincode) {
-        // Filter by same pincode
-        vendors = await db
-          .select()
-          .from(vendorProfiles)
-          .where(and(
-            eq(vendorProfiles.pincode, pincode as string),
-            eq(vendorProfiles.profileCompleted, true)
-          ))
-          .orderBy(desc(vendorProfiles.trustScore));
-      } else if (lat && lng) {
-        // For location-based search, get all vendors and filter in memory for simplicity
-        vendors = await db
-          .select()
-          .from(vendorProfiles)
-          .where(eq(vendorProfiles.profileCompleted, true))
-          .orderBy(desc(vendorProfiles.trustScore));
-        
-        // Filter by approximate 2km radius
-        const userLat = parseFloat(lat as string);
-        const userLng = parseFloat(lng as string);
-        
-        vendors = vendors.filter(vendor => {
-          if (!vendor.latitude || !vendor.longitude) return false;
-          const vendorLat = parseFloat(vendor.latitude);
-          const vendorLng = parseFloat(vendor.longitude);
-          
-          // Simple distance calculation (not precise)
-          const latDiff = Math.abs(userLat - vendorLat);
-          const lngDiff = Math.abs(userLng - vendorLng);
-          const distance = Math.sqrt(latDiff * latDiff + lngDiff * lngDiff) * 111; // Rough km conversion
-          
-          return distance <= 2; // Within 2km
-        });
-      } else {
-        // Default: return all vendors
-        vendors = await db
-          .select()
-          .from(vendorProfiles)
-          .where(eq(vendorProfiles.profileCompleted, true))
-          .orderBy(desc(vendorProfiles.trustScore));
-      }
+      // Sample nearby vendors data for demonstration
+      const sampleNearbyVendors = [
+        {
+          id: "vendor_001",
+          vendorName: "राम कुमार",
+          storeName: "राम भैया की चाट",
+          area: "Karol Bagh",
+          phone: "9876543210",
+          categories: ["चाट", "समोसा", "चाय"],
+          distance: 150,
+          rating: 4.8,
+          verified: true,
+          businessType: 'restaurant',
+          coordinates: { lat: 28.6519, lng: 77.1909 }
+        },
+        {
+          id: "vendor_002", 
+          vendorName: "सुनीता देवी",
+          storeName: "मटका कुल्फी वाला",
+          area: "Karol Bagh",
+          phone: "9876543211",
+          categories: ["कुल्फी", "आइसक्रीम", "शरबत"],
+          distance: 280,
+          rating: 4.6,
+          verified: true,
+          businessType: 'restaurant',
+          coordinates: { lat: 28.6509, lng: 77.1919 }
+        },
+        {
+          id: "vendor_003",
+          vendorName: "विकास शर्मा", 
+          storeName: "माँ की रसोई",
+          area: "Karol Bagh",
+          phone: "9876543212",
+          categories: ["पराठा", "सब्जी", "दाल"],
+          distance: 350,
+          rating: 4.7,
+          verified: false,
+          businessType: 'restaurant',
+          coordinates: { lat: 28.6529, lng: 77.1899 }
+        },
+        {
+          id: "vendor_004",
+          vendorName: "अजय गुप्ता",
+          storeName: "गर्म चाय स्टॉल",
+          area: "Karol Bagh", 
+          phone: "9876543213",
+          categories: ["चाय", "बिस्कुट", "मैगी"],
+          distance: 420,
+          rating: 4.5,
+          verified: true,
+          businessType: 'restaurant',
+          coordinates: { lat: 28.6539, lng: 77.1889 }
+        },
+        {
+          id: "vendor_005",
+          vendorName: "प्रिया देवी",
+          storeName: "प्रिया का ढाबा",
+          area: "Lajpat Nagar",
+          phone: "9876543214", 
+          categories: ["राजमा", "चावल", "रोटी"],
+          distance: 2200,
+          rating: 4.9,
+          verified: true,
+          businessType: 'restaurant',
+          coordinates: { lat: 28.5678, lng: 77.2434 }
+        },
+        {
+          id: "vendor_006",
+          vendorName: "संजय कुमार",
+          storeName: "फ्रेश फ्रूट जूस",
+          area: "Connaught Place",
+          phone: "9876543215",
+          categories: ["जूस", "फल", "शेक"],
+          distance: 3100,
+          rating: 4.4,
+          verified: false,
+          businessType: 'restaurant',
+          coordinates: { lat: 28.6315, lng: 77.2167 }
+        }
+      ];
 
-      // Add stock highlights for demo
-      const vendorsWithStock = vendors.map(vendor => ({
-        ...vendor,
-        stockHighlights: [
-          { item: 'Aloo', status: Math.random() > 0.3 ? 'full' as const : 'low' as const },
-          { item: 'Pyaz', status: Math.random() > 0.4 ? 'full' as const : 'low' as const },
-          { item: 'Tamatar', status: Math.random() > 0.5 ? 'full' as const : 'out' as const },
-          { item: 'Oil', status: Math.random() > 0.2 ? 'full' as const : 'low' as const },
-        ].slice(0, 3),
-        distance: lat && lng && vendor.latitude && vendor.longitude ? 
-          Math.random() * 2 : undefined
-      }));
-
-      res.json(vendorsWithStock);
+      // Return all sample vendors for now
+      console.log(`Returning ${sampleNearbyVendors.length} sample vendors`);
+      res.json(sampleNearbyVendors);
     } catch (error) {
       console.error('Error fetching nearby vendors:', error);
       res.status(500).json({ error: 'Failed to fetch nearby vendors' });
@@ -743,147 +771,6 @@ export function registerRoutes(app: Express) {
     }
   });
 
-  // Nearby Vendors Routes
-  app.get("/api/nearby-vendors", (req, res) => {
-    const { lat, lng, pincode, area } = req.query;
-    
-    try {
-      // Sample nearby vendors data for demonstration
-      const sampleNearbyVendors = [
-        {
-          id: "vendor_001",
-          vendorName: "राम कुमार",
-          storeName: "राम भैया की चाट",
-          area: "Karol Bagh",
-          phone: "9876543210",
-          categories: ["चाट", "समोसा", "चाय"],
-          distance: 150,
-          rating: 4.8,
-          verified: true,
-          coordinates: { lat: 28.6519, lng: 77.1909 }
-        },
-        {
-          id: "vendor_002", 
-          vendorName: "सुनीता देवी",
-          storeName: "मटका कुल्फी वाला",
-          area: "Karol Bagh",
-          phone: "9876543211",
-          categories: ["कुल्फी", "आइसक्रीम", "शरबत"],
-          distance: 280,
-          rating: 4.6,
-          verified: true,
-          coordinates: { lat: 28.6509, lng: 77.1919 }
-        },
-        {
-          id: "vendor_003",
-          vendorName: "विकास शर्मा", 
-          storeName: "माँ की रसोई",
-          area: "Karol Bagh",
-          phone: "9876543212",
-          categories: ["पराठा", "सब्जी", "दाल"],
-          distance: 350,
-          rating: 4.7,
-          verified: false,
-          coordinates: { lat: 28.6529, lng: 77.1899 }
-        },
-        {
-          id: "vendor_004",
-          vendorName: "अजय गुप्ता",
-          storeName: "गर्म चाय स्टॉल",
-          area: "Karol Bagh", 
-          phone: "9876543213",
-          categories: ["चाय", "बिस्कुट", "मैगी"],
-          distance: 420,
-          rating: 4.5,
-          verified: true,
-          coordinates: { lat: 28.6539, lng: 77.1889 }
-        },
-        {
-          id: "vendor_005",
-          vendorName: "प्रिया देवी",
-          storeName: "प्रिया का ढाबा",
-          area: "Lajpat Nagar",
-          phone: "9876543214", 
-          categories: ["राजमा", "चावल", "रोटी"],
-          distance: 2200,
-          rating: 4.9,
-          verified: true,
-          coordinates: { lat: 28.5678, lng: 77.2434 }
-        },
-        {
-          id: "vendor_006",
-          vendorName: "संजय कुमार",
-          storeName: "फ्रेश फ्रूट जूस",
-          area: "Connaught Place",
-          phone: "9876543215",
-          categories: ["जूस", "फल", "शेक"],
-          distance: 3100,
-          rating: 4.4,
-          verified: false,
-          coordinates: { lat: 28.6315, lng: 77.2167 }
-        }
-      ];
-      
-      let filteredVendors = [...sampleNearbyVendors];
-      
-      // Filter by area if provided
-      if (area && typeof area === 'string') {
-        const searchArea = area.toLowerCase();
-        filteredVendors = filteredVendors.filter(vendor => 
-          vendor.area.toLowerCase().includes(searchArea) ||
-          searchArea.includes(vendor.area.toLowerCase())
-        );
-      }
-      
-      // Filter by pincode mapping (simplified)
-      if (pincode && typeof pincode === 'string') {
-        const pincodeAreaMap: Record<string, string[]> = {
-          '110005': ['Karol Bagh'],
-          '110024': ['Lajpat Nagar'], 
-          '110001': ['Connaught Place'],
-          '110006': ['Karol Bagh'],
-          '110017': ['Lajpat Nagar']
-        };
-        
-        const areasForPincode = pincodeAreaMap[pincode] || [];
-        if (areasForPincode.length > 0) {
-          filteredVendors = filteredVendors.filter(vendor =>
-            areasForPincode.some(area => 
-              vendor.area.toLowerCase().includes(area.toLowerCase())
-            )
-          );
-        }
-      }
-      
-      // Calculate distance if user coordinates provided
-      if (lat && lng && typeof lat === 'string' && typeof lng === 'string') {
-        const userLat = parseFloat(lat);
-        const userLng = parseFloat(lng);
-        
-        filteredVendors = filteredVendors.map(vendor => {
-          if (vendor.coordinates) {
-            const distance = calculateDistance(
-              userLat, userLng, 
-              vendor.coordinates.lat, vendor.coordinates.lng
-            );
-            return { ...vendor, distance: Math.round(distance) };
-          }
-          return vendor;
-        });
-      }
-      
-      // Sort by distance (closest first)
-      filteredVendors.sort((a, b) => a.distance - b.distance);
-      
-      // Limit to top 10 results
-      const results = filteredVendors.slice(0, 10);
-      
-      res.json(results);
-    } catch (error) {
-      console.error('Error fetching nearby vendors:', error);
-      res.status(500).json({ error: 'Failed to fetch nearby vendors' });
-    }
-  });
 
   // Live Market Prices API - Real-time data from government sources
   app.get("/api/live-prices/:item", async (req, res) => {

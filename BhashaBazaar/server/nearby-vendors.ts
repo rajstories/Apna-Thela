@@ -259,80 +259,24 @@ export function registerNearbyVendorsRoutes(app: Express) {
     const { lat, lng, pincode, area } = req.query;
     
     try {
-      let filteredVendors: NearbyVendor[] = [];
+      console.log('=== NEARBY VENDORS API CALLED ===');
+      console.log('Params received:', { lat, lng, pincode, area });
       
-      console.log('API called with params:', { lat, lng, pincode, area });
+      // Always return sample vendors with calculated distances
+      let filteredVendors: NearbyVendor[] = [...sampleNearbyVendors];
       
-      // Try to get real data from Google Places API first
+      // Calculate distances if lat/lng provided
       if (lat && lng && typeof lat === 'string' && typeof lng === 'string') {
         const userLat = parseFloat(lat);
         const userLng = parseFloat(lng);
         
-        console.log('Searching for nearby businesses using Google Places API...');
-        const googlePlaces = await searchNearbyBusinesses(userLat, userLng);
-        
-        console.log(`Google Places returned ${googlePlaces.length} results`);
-        
-        if (googlePlaces.length > 0) {
-          console.log(`Found ${googlePlaces.length} businesses from Google Places`);
-          filteredVendors = googlePlaces.map(place => convertGooglePlaceToVendor(place, userLat, userLng));
-        } else {
-          console.log('No results from Google Places API, using fallback data');
-          filteredVendors = sampleNearbyVendors.map(vendor => ({
-            ...vendor,
-            distance: vendor.coordinates ? 
-              Math.round(calculateDistance(userLat, userLng, vendor.coordinates.lat, vendor.coordinates.lng) * 1000) : 
-              vendor.distance
-          }));
-          console.log(`Fallback data has ${filteredVendors.length} vendors`);
-        }
-      } else {
-        // Fallback to sample data
-        console.log('No lat/lng provided, using sample data');
-        filteredVendors = [...sampleNearbyVendors];
-      }
-      
-      // Filter by area if provided
-      if (area && typeof area === 'string') {
-        const searchArea = area.toLowerCase();
-        filteredVendors = filteredVendors.filter(vendor => 
-          vendor.area.toLowerCase().includes(searchArea) ||
-          searchArea.includes(vendor.area.toLowerCase())
-        );
-      }
-      
-      // Filter by pincode mapping (simplified)
-      if (pincode && typeof pincode === 'string') {
-        const pincodeAreaMap: Record<string, string[]> = {
-          '110005': ['Karol Bagh'],
-          '110024': ['Lajpat Nagar'], 
-          '110001': ['Connaught Place'],
-          '110006': ['Karol Bagh'],
-          '110017': ['Lajpat Nagar']
-        };
-        
-        const areasForPincode = pincodeAreaMap[pincode] || [];
-        if (areasForPincode.length > 0) {
-          filteredVendors = filteredVendors.filter(vendor =>
-            areasForPincode.some(area => 
-              vendor.area.toLowerCase().includes(area.toLowerCase())
-            )
-          );
-        }
-      }
-      
-      // Ensure we always have some vendors to show
-      if (filteredVendors.length === 0) {
-        console.log('No vendors found after filtering, adding sample data');
-        const userLat = lat ? parseFloat(lat as string) : null;
-        const userLng = lng ? parseFloat(lng as string) : null;
-        
         filteredVendors = sampleNearbyVendors.map(vendor => ({
           ...vendor,
-          distance: (vendor.coordinates && userLat && userLng) ? 
+          distance: vendor.coordinates ? 
             Math.round(calculateDistance(userLat, userLng, vendor.coordinates.lat, vendor.coordinates.lng) * 1000) : 
             vendor.distance
         }));
+        console.log('Calculated distances for all vendors');
       }
       
       // Sort by distance (closest first)
@@ -341,6 +285,7 @@ export function registerNearbyVendorsRoutes(app: Express) {
       // Limit to top 10 results
       const results = filteredVendors.slice(0, 10);
       
+      console.log(`Returning ${results.length} vendors to frontend`);
       res.json(results);
     } catch (error) {
       console.error('Error fetching nearby vendors:', error);
