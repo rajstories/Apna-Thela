@@ -509,59 +509,7 @@ export default function BuyIngredients() {
                       </Button>
                     )}
                   </div>
-                </div>
-
-                    {/* Action Buttons Row */}
-                    <div className="flex space-x-2">
-                      <Button
-                        size="sm"
-                        onClick={() => handleAddToCart(product.id)}
-                        disabled={addToCartMutation.isPending}
-                        className="flex-1 h-10 bg-saffron-600 hover:bg-saffron-700 transition-colors duration-200 shadow-sm"
-                      >
-                        <ShoppingCart className="h-4 w-4 mr-1" />
-                        <span className="font-medium">
-                          {language === 'hi' ? 'कार्ट में' : 'Add Cart'}
-                        </span>
-                      </Button>
-                      {product.onlineStoreUrl && (
-                        <Button
-                          size="sm"
-                          onClick={() => {
-                            window.open(product.onlineStoreUrl!, '_blank');
-                            toast({
-                              title: language === 'hi' ? '🛒 खरीदारी के लिए रीडायरेक्ट किया गया' : '🛒 Redirected to Buy',
-                              description: language === 'hi' 
-                                ? `${getSupplierName(product.supplier)} से ${quantities[product.id] || 1} ${product.unit} खरीदें` 
-                                : `Buy ${quantities[product.id] || 1} ${product.unit} from ${getSupplierName(product.supplier)}`,
-                            });
-                          }}
-                          className="flex-1 h-10 bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 transition-all duration-200 shadow-sm"
-                        >
-                          <ExternalLink className="h-4 w-4 mr-1" />
-                          <span className="font-medium">
-                            {language === 'hi' ? 'अभी खरीदें' : 
-                             language === 'bn' ? 'এখনই কিনুন' : 
-                             language === 'mr' ? 'आता खरेदी करा' : 
-                             language === 'ta' ? 'இப்போது வாங்கவும்' : 
-                             language === 'te' ? 'ఇప్పుడు కొనండి' : 
-                             'Buy Now'}
-                          </span>
-                        </Button>
-                      )}
-                    </div>
-                    
-                    {/* Price Preview for Buy Now */}
-                    {product.onlineStoreUrl && (
-                      <div className="text-center mt-2">
-                        <span className="text-xs text-gray-500 bg-gray-50 px-2 py-1 rounded-full">
-                          {language === 'hi' ? 'कुल:' : 'Total:'} ₹{(parseFloat(product.pricePerUnit) * (quantities[product.id] || 1)).toFixed(2)}
-                        </span>
-                      </div>
-                    )}
-                  </div>
-                </div>
-              </CardContent>
+                </CardContent>
             </Card>
           ))}
 
@@ -593,49 +541,34 @@ export default function BuyIngredients() {
                       ₹{order.totalAmount}
                     </div>
                   </div>
-                  <div className="flex space-x-2">
-                    <Badge variant={order.status === 'delivered' ? 'default' : 'secondary'}>
-                      {order.status}
-                    </Badge>
-                    <Button
-                      size="sm"
-                      onClick={() => handleReorder(order)}
-                      className="bg-saffron-600 hover:bg-saffron-700"
-                    >
-                      {getTranslation(language, 'order.reorder')}
-                    </Button>
-                  </div>
+                  <Button
+                    size="sm"
+                    onClick={() => handleReorder(order.id)}
+                    className="bg-blue-600 hover:bg-blue-700"
+                  >
+                    {language === 'hi' ? 'फिर से ऑर्डर करें' : 'Reorder'}
+                  </Button>
                 </div>
               </CardContent>
             </Card>
           ))}
-
           {recentOrders.length === 0 && (
             <Card>
               <CardContent className="text-center py-8">
-                <Clock className="h-12 w-12 mx-auto text-gray-400 mb-4" />
-                <p className="text-gray-600">{getTranslation(language, 'order.noRecent')}</p>
+                <p className="text-gray-600">{language === 'hi' ? 'कोई पिछले ऑर्डर नहीं मिले' : 'No recent orders found'}</p>
               </CardContent>
             </Card>
           )}
         </TabsContent>
       </Tabs>
 
-      <div className="pb-20" /> {/* Spacer for bottom navigation */}
-      
-      {/* Floating Help Button */}
-      <FloatingHelpButton />
-
-      <BottomNavigation />
-      
-      {/* Best Deals Modal */}
       <BestDealsModal
-        productName={bestDealsProduct || ''}
         isOpen={isBestDealsOpen}
         onClose={() => {
           setIsBestDealsOpen(false);
-          setBestDealsProduct(null);
+          setBestDealsProduct('');
         }}
+        productName={bestDealsProduct}
       />
     </div>
   );
