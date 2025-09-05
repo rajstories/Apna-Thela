@@ -51,6 +51,10 @@ app.use((req, res, next) => {
   const { seedPriceComparisonData } = await import("./price-comparison-seed");
   await seedPriceComparisonData();
   
+  // Seed marketplace products and suppliers (in both development and production)
+  const { seedMarketplaceData } = await import("./marketplace-seed");
+  await seedMarketplaceData();
+  
   // Ensure database tables are properly initialized
   console.log('Database seeding completed for environment:', process.env.NODE_ENV || 'production');
 
