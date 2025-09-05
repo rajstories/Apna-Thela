@@ -413,9 +413,9 @@ export default function BuyIngredients() {
                   </div>
                 </div>
 
-                {/* Mobile-Optimized Shopping Controls */}
-                <div className="space-y-4">
-                  {/* Quantity Selector - Centered Layout */}
+                {/* Shopping Controls - Clean Mobile Layout */}
+                <div className="space-y-3">
+                  {/* Quantity Selector */}
                   <div className="flex items-center justify-center space-x-4 bg-gray-50 rounded-lg py-3 px-4">
                     <span className="text-sm font-medium text-gray-700">
                       {language === 'hi' ? 'मात्रा:' : 'Qty:'}
@@ -425,7 +425,7 @@ export default function BuyIngredients() {
                         variant="outline"
                         size="sm"
                         onClick={() => handleQuantityChange(product.id, Math.max(1, (quantities[product.id] || 1) - 1))}
-                        className="h-9 w-9 p-0"
+                        className="h-8 w-8 p-0"
                       >
                         <Minus className="h-4 w-4" />
                       </Button>
@@ -433,14 +433,14 @@ export default function BuyIngredients() {
                         type="number"
                         value={quantities[product.id] || 1}
                         onChange={(e) => handleQuantityChange(product.id, Math.max(1, parseInt(e.target.value) || 1))}
-                        className="w-16 text-center h-9"
+                        className="w-16 text-center h-8"
                         min="1"
                       />
                       <Button
                         variant="outline"
                         size="sm"
                         onClick={() => handleQuantityChange(product.id, (quantities[product.id] || 1) + 1)}
-                        className="h-9 w-9 p-0"
+                        className="h-8 w-8 p-0"
                       >
                         <Plus className="h-4 w-4" />
                       </Button>
@@ -452,31 +452,22 @@ export default function BuyIngredients() {
                     </div>
                   </div>
 
-                  {/* Equal-Width Action Buttons */}
-                  <div className="grid grid-cols-2 gap-3">
-                  <div className="flex items-center space-x-2">
+                    {/* Best Deals Button */}
                     <Button
                       variant="outline"
-                      size="sm"
-                      onClick={() => handleQuantityChange(product.id, (quantities[product.id] || 1) - 1)}
+                      onClick={() => {
+                        setBestDealsProduct(getProductName(product));
+                        setIsBestDealsOpen(true);
+                      }}
+                      className="h-12 bg-gradient-to-br from-amber-50 to-orange-50 border-amber-300 hover:from-amber-100 hover:to-orange-100 hover:border-amber-400 transition-all duration-200 shadow-sm"
                     >
-                      <Minus className="h-3 w-3" />
+                      <div className="flex flex-col items-center justify-center space-y-1">
+                        <TrendingDown className="h-4 w-4 text-amber-600" />
+                        <span className="text-xs font-semibold text-amber-700">
+                          {language === 'hi' ? 'बेस्ट डील्स' : 'Best Deals'}
+                        </span>
+                      </div>
                     </Button>
-                    <Input
-                      type="number"
-                      value={quantities[product.id] || 1}
-                      onChange={(e) => handleQuantityChange(product.id, parseInt(e.target.value) || 1)}
-                      className="w-16 text-center"
-                      min="1"
-                    />
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => handleQuantityChange(product.id, (quantities[product.id] || 1) + 1)}
-                    >
-                      <Plus className="h-3 w-3" />
-                    </Button>
-                  </div>
                   <div className="flex flex-col space-y-2">
                     {/* Best Deals Button - Professional Style */}
                     <Button
@@ -543,7 +534,6 @@ export default function BuyIngredients() {
                       </div>
                     )}
                   </div>
-                </div>
                 </div>
               </CardContent>
             </Card>
