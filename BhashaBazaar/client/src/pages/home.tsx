@@ -283,14 +283,17 @@ export default function Home() {
               <p className="text-sm opacity-90">{getTranslation(language, 'app.subtitle')}</p>
             </div>
           </div>
-          <Button
-            variant="ghost"
-            size="icon"
-            className="text-white hover:bg-white hover:bg-opacity-20"
-            onClick={() => setShowLanguageModal(true)}
-          >
-            <Globe className="w-5 h-5" />
-          </Button>
+          <div className="flex items-center">
+            <FloatingHelpButton />
+            <Button
+              variant="ghost"
+              size="icon"
+              className="text-white hover:bg-white hover:bg-opacity-20"
+              onClick={() => setShowLanguageModal(true)}
+            >
+              <Globe className="w-5 h-5" />
+            </Button>
+          </div>
         </div>
       </header>
 
@@ -756,8 +759,6 @@ export default function Home() {
         onOpenChange={setShowCalculator}
       />
 
-      {/* Floating Help Button */}
-      <FloatingHelpButton />
 
       {/* Bottom Navigation */}
       <BottomNavigation />
