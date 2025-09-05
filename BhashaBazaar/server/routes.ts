@@ -258,7 +258,12 @@ export function registerRoutes(app: Express) {
           rating: 4.8,
           verified: true,
           businessType: 'restaurant',
-          coordinates: { lat: 28.6519, lng: 77.1909 }
+          coordinates: { lat: 28.6519, lng: 77.1909 },
+          stockHighlights: [
+            { item: 'चाट मसाला', status: 'full' },
+            { item: 'समोसा', status: 'full' },
+            { item: 'चटनी', status: 'low' }
+          ]
         },
         {
           id: "vendor_002", 
@@ -271,7 +276,12 @@ export function registerRoutes(app: Express) {
           rating: 4.6,
           verified: true,
           businessType: 'restaurant',
-          coordinates: { lat: 28.6509, lng: 77.1919 }
+          coordinates: { lat: 28.6509, lng: 77.1919 },
+          stockHighlights: [
+            { item: 'कुल्फी', status: 'full' },
+            { item: 'आइसक्रीम', status: 'low' },
+            { item: 'शरबत', status: 'full' }
+          ]
         },
         {
           id: "vendor_003",
@@ -284,7 +294,12 @@ export function registerRoutes(app: Express) {
           rating: 4.7,
           verified: false,
           businessType: 'restaurant',
-          coordinates: { lat: 28.6529, lng: 77.1899 }
+          coordinates: { lat: 28.6529, lng: 77.1899 },
+          stockHighlights: [
+            { item: 'आटा', status: 'full' },
+            { item: 'सब्जी', status: 'full' },
+            { item: 'दाल', status: 'out' }
+          ]
         },
         {
           id: "vendor_004",
@@ -297,7 +312,12 @@ export function registerRoutes(app: Express) {
           rating: 4.5,
           verified: true,
           businessType: 'restaurant',
-          coordinates: { lat: 28.6539, lng: 77.1889 }
+          coordinates: { lat: 28.6539, lng: 77.1889 },
+          stockHighlights: [
+            { item: 'चाय पत्ती', status: 'full' },
+            { item: 'दूध', status: 'low' },
+            { item: 'चीनी', status: 'full' }
+          ]
         },
         {
           id: "vendor_005",
@@ -310,7 +330,12 @@ export function registerRoutes(app: Express) {
           rating: 4.9,
           verified: true,
           businessType: 'restaurant',
-          coordinates: { lat: 28.5678, lng: 77.2434 }
+          coordinates: { lat: 28.5678, lng: 77.2434 },
+          stockHighlights: [
+            { item: 'राजमा', status: 'full' },
+            { item: 'चावल', status: 'full' },
+            { item: 'घी', status: 'low' }
+          ]
         },
         {
           id: "vendor_006",
@@ -323,7 +348,12 @@ export function registerRoutes(app: Express) {
           rating: 4.4,
           verified: false,
           businessType: 'restaurant',
-          coordinates: { lat: 28.6315, lng: 77.2167 }
+          coordinates: { lat: 28.6315, lng: 77.2167 },
+          stockHighlights: [
+            { item: 'फल', status: 'full' },
+            { item: 'बर्फ', status: 'low' },
+            { item: 'चीनी', status: 'full' }
+          ]
         }
       ];
 
