@@ -439,43 +439,69 @@ export default function BuyIngredients() {
                     </Button>
                   </div>
                   <div className="flex flex-col space-y-2">
+                    {/* Best Deals Button - Professional Style */}
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => {
+                        setBestDealsProduct(getProductName(product));
+                        setIsBestDealsOpen(true);
+                      }}
+                      className="w-full h-10 bg-gradient-to-r from-amber-50 to-orange-50 border-amber-300 hover:from-amber-100 hover:to-orange-100 hover:border-amber-400 transition-all duration-200 shadow-sm mb-2"
+                    >
+                      <TrendingDown className="h-4 w-4 mr-2 text-amber-600" />
+                      <span className="font-medium text-amber-700">
+                        {language === 'hi' ? '🎯 बेस्ट डील्स' : '🎯 Best Deals'}
+                      </span>
+                    </Button>
+
+                    {/* Action Buttons Row */}
                     <div className="flex space-x-2">
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => {
-                          setBestDealsProduct(getProductName(product));
-                          setIsBestDealsOpen(true);
-                        }}
-                        className="flex-1 bg-gradient-to-r from-yellow-50 to-orange-50 border-orange-200 hover:from-yellow-100 hover:to-orange-100"
-                      >
-                        <TrendingDown className="h-3 w-3 mr-1 text-green-600" />
-                        {language === 'hi' ? '🎯 बेस्ट डील' : '🎯 Best Deals'}
-                      </Button>
                       <Button
                         size="sm"
                         onClick={() => handleAddToCart(product.id)}
                         disabled={addToCartMutation.isPending}
-                        className="bg-saffron-600 hover:bg-saffron-700 flex-1"
+                        className="flex-1 h-10 bg-saffron-600 hover:bg-saffron-700 transition-colors duration-200 shadow-sm"
                       >
-                        <ShoppingCart className="h-3 w-3 mr-1" />
-                        {getTranslation(language, 'cart.add')}
+                        <ShoppingCart className="h-4 w-4 mr-1" />
+                        <span className="font-medium">
+                          {language === 'hi' ? 'कार्ट में' : 'Add Cart'}
+                        </span>
                       </Button>
+                      {product.onlineStoreUrl && (
+                        <Button
+                          size="sm"
+                          onClick={() => {
+                            window.open(product.onlineStoreUrl!, '_blank');
+                            toast({
+                              title: language === 'hi' ? '🛒 खरीदारी के लिए रीडायरेक्ट किया गया' : '🛒 Redirected to Buy',
+                              description: language === 'hi' 
+                                ? `${getSupplierName(product.supplier)} से ${quantities[product.id] || 1} ${product.unit} खरीदें` 
+                                : `Buy ${quantities[product.id] || 1} ${product.unit} from ${getSupplierName(product.supplier)}`,
+                            });
+                          }}
+                          className="flex-1 h-10 bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 transition-all duration-200 shadow-sm"
+                        >
+                          <ExternalLink className="h-4 w-4 mr-1" />
+                          <span className="font-medium">
+                            {language === 'hi' ? 'अभी खरीदें' : 
+                             language === 'bn' ? 'এখনই কিনুন' : 
+                             language === 'mr' ? 'आता खरेदी करा' : 
+                             language === 'ta' ? 'இப்போது வாங்கவும்' : 
+                             language === 'te' ? 'ఇప్పుడు కొనండి' : 
+                             'Buy Now'}
+                          </span>
+                        </Button>
+                      )}
                     </div>
+                    
+                    {/* Price Preview for Buy Now */}
                     {product.onlineStoreUrl && (
-                      <Button
-                        size="sm"
-                        onClick={() => window.open(product.onlineStoreUrl!, '_blank')}
-                        className="bg-green-600 hover:bg-green-700 w-full"
-                      >
-                        <ExternalLink className="h-3 w-3 mr-1" />
-                        {language === 'hi' ? 'अभी खरीदें' : 
-                         language === 'bn' ? 'এখনই কিনুন' : 
-                         language === 'mr' ? 'आता खरेदी करा' : 
-                         language === 'ta' ? 'இப்போது வாங்கவும்' : 
-                         language === 'te' ? 'ఇప్పుడు కొనండి' : 
-                         'Buy Now'}
-                      </Button>
+                      <div className="text-center mt-2">
+                        <span className="text-xs text-gray-500 bg-gray-50 px-2 py-1 rounded-full">
+                          {language === 'hi' ? 'कुल:' : 'Total:'} ₹{(parseFloat(product.pricePerUnit) * (quantities[product.id] || 1)).toFixed(2)}
+                        </span>
+                      </div>
                     )}
                   </div>
                 </div>
