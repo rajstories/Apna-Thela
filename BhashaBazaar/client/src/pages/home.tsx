@@ -15,7 +15,7 @@ import { useSpeech } from '@/hooks/use-speech';
 import { useToast } from '@/hooks/use-toast';
 import { getTranslation, getRandomTagline } from '@/lib/i18n';
 import { voiceShoppingService } from '@/lib/voice-shopping';
-import { ShoppingCart, Package, Mic, MapPin, Calculator, HelpCircle, Globe, User, Volume2, Wallet, Check, RotateCcw } from 'lucide-react';
+import { ShoppingCart, Package, Mic, MapPin, Calculator, Headphones, Globe, User, Volume2, Wallet, Check, RotateCcw } from 'lucide-react';
 import ApnaThelaLogo from '@/assets/apna-thela-logo.svg';
 import { useLocation } from 'wouter';
 import type { InventoryItem } from '@shared/schema';
@@ -222,7 +222,7 @@ export default function Home() {
       action: () => setShowCalculator(true),
     },
     {
-      icon: HelpCircle,
+      icon: Headphones,
       label: getTranslation(language, 'quickActions.help'),
       sublabel: getTranslation(language, 'quickActions.helpEn'),
       color: 'bg-blue-100 text-blue-600',
