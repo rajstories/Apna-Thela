@@ -60,7 +60,7 @@ export function LanguageModal({ open, onClose }: LanguageModalProps) {
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent className="max-w-md mx-auto">
+      <DialogContent className="max-w-lg w-full mx-auto max-h-[90vh] overflow-y-auto">
         <div className="text-center mb-6">
           <div className="w-16 h-16 bg-saffron rounded-full flex items-center justify-center mx-auto mb-4">
             <Globe className="w-8 h-8 text-white" />
@@ -128,7 +128,7 @@ export function LanguageModal({ open, onClose }: LanguageModalProps) {
             </p>
           </div>
         ) : (
-          <div className="space-y-3">
+          <div className="space-y-3 max-h-64 overflow-y-auto">
             {languages.map((lang) => (
               <Button
                 key={lang.code}
