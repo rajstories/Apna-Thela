@@ -35,24 +35,38 @@ export default function NearbySellers() {
   const [itemFilter, setItemFilter] = useState<string>('all');
   const [searchQuery, setSearchQuery] = useState('');
 
-  // Check for saved location preference and current location capability
+  // Always prioritize location permission request on first visit
   useEffect(() => {
-    const savedLocation = localStorage.getItem('userLocation');
-    const savedPincode = localStorage.getItem('userPincode');
+    // Clear any old saved data to force location permission dialog
+    const shouldForceLocationRequest = !localStorage.getItem('locationPermissionAsked');
     
-    if (savedLocation) {
-      try {
-        const location = JSON.parse(savedLocation);
-        setUserLocation(location);
-        setLocationPermissionState('granted');
+    if (shouldForceLocationRequest) {
+      // Clear old data and show location dialog
+      localStorage.removeItem('userLocation');
+      localStorage.removeItem('userPincode'); 
+      setShowLocationPrompt(true);
+      setLocationPermissionState('requesting');
+      localStorage.setItem('locationPermissionAsked', 'true');
+    } else {
+      // Check for existing preferences
+      const savedLocation = localStorage.getItem('userLocation');
+      const savedPincode = localStorage.getItem('userPincode');
+      
+      if (savedLocation) {
+        try {
+          const location = JSON.parse(savedLocation);
+          setUserLocation(location);
+          setLocationPermissionState('granted');
+          setShowLocationPrompt(false);
+        } catch (error) {
+          console.error('Error parsing saved location:', error);
+          setShowLocationPrompt(true);
+        }
+      } else if (savedPincode) {
+        setUserPincode(savedPincode);
+        setLocationPermissionState('denied');
         setShowLocationPrompt(false);
-      } catch (error) {
-        console.error('Error parsing saved location:', error);
       }
-    } else if (savedPincode) {
-      setUserPincode(savedPincode);
-      setLocationPermissionState('denied');
-      setShowLocationPrompt(false);
     }
     
     // Check if geolocation is available
@@ -372,15 +386,38 @@ export default function NearbySellers() {
             </span>
           </Button>
           
-          <div className="flex items-center space-x-2 text-sm text-gray-600">
-            <MapPin className="w-4 h-4" />
-            <span>
-              {userLocation ? (
-                language === 'hi' ? 'आसपास 2km' : 'Within 2km'
-              ) : (
-                userPincode || '110024'
-              )}
-            </span>
+          <div className="flex items-center space-x-3">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => {
+                // Clear saved data and show location dialog again
+                localStorage.removeItem('userLocation');
+                localStorage.removeItem('userPincode');
+                localStorage.removeItem('locationPermissionAsked');
+                setShowLocationPrompt(true);
+                setLocationPermissionState('requesting');
+                setUserLocation(null);
+                setUserPincode('');
+              }}
+              className="flex items-center space-x-1 text-orange-600"
+            >
+              <Navigation className="w-4 h-4" />
+              <span>
+                {language === 'hi' ? 'GPS' : 'GPS'}
+              </span>
+            </Button>
+            
+            <div className="flex items-center space-x-2 text-sm text-gray-600">
+              <MapPin className="w-4 h-4" />
+              <span>
+                {userLocation ? (
+                  language === 'hi' ? 'आसपास 2km' : 'Within 2km'
+                ) : (
+                  userPincode || '110024'
+                )}
+              </span>
+            </div>
           </div>
         </div>
 
