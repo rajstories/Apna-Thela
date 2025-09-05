@@ -112,9 +112,9 @@ export default function Home() {
         success: result.success,
         message: result.message,
         redirectUrl: result.redirectUrl,
-        productName: result.product?.productName,
-        price: result.product?.pricePerUnit,
-        supplier: result.product?.supplier.name
+        productName: result.product?.name,
+        price: result.product?.translatedName ? `Search for: ${result.product.translatedName}` : undefined,
+        supplier: result.product?.platform
       });
 
       if (result.success && result.redirectUrl) {

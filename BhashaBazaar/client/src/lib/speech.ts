@@ -198,9 +198,13 @@ export class SpeechService {
     
     // Patterns for quantity and units in multiple languages
     const quantityPatterns = [
-      // Specific Hindi patterns with units: quantity + unit + product
-      /(\d+(?:\.\d+)?)\s+(किलो|किग्रा|ग्राम|पैकेट|बोतल|लीटर|पीस)\s+(.+)/i,
-      /(एक|दो|तीन|चार|पांच|पाँच|छह|सात|आठ|नौ|दस|ek|do|teen|char|panch|paanch|cheh|saat|aath|nau|das)\s+(किलो|किग्रा|ग्राम|पैकेट|बोतल|लीटर|पीस)\s+(.+)/i,
+      // Product first patterns: product + quantity + unit (common in Hindi)
+      /(.+?)\s+(एक|दो|तीन|चार|पांच|पाँच|छह|सात|आठ|नौ|दस|ek|do|teen|char|panch|paanch|cheh|saat|aath|nau|das)\s+(किलो|किग्रा|ग्राम|पैकेट|बोतल|लीटर|पीस|पाव)/i,
+      /(.+?)\s+(\d+(?:\.\d+)?)\s+(किलो|किग्रा|ग्राम|पैकेट|बोतल|लीटर|पीस|पाव)/i,
+      
+      // Quantity first patterns: quantity + unit + product
+      /(\d+(?:\.\d+)?)\s+(किलो|किग्रा|ग्राम|पैकेट|बोतल|लीटर|पीस|पाव)\s+(.+)/i,
+      /(एक|दो|तीन|चार|पांच|पाँच|छह|सात|आठ|नौ|दस|ek|do|teen|char|panch|paanch|cheh|saat|aath|nau|das)\s+(किलो|किग्रा|ग्राम|पैकेट|बोतल|लीटर|पीस|पाव)\s+(.+)/i,
       
       // English patterns: quantity + unit + product
       /(\d+(?:\.\d+)?)\s+(kg|kilo|kilogram|grams?|g|lbs?|pounds?|piece|pieces|pcs|packet|packets|bottle|bottles|liter|liters?|l)\s+(.+)/i,
@@ -232,7 +236,8 @@ export class SpeechService {
       'piece': 'piece', 'pieces': 'piece', 'pcs': 'piece', 'पीस': 'piece',
       'packet': 'packet', 'packets': 'packet', 'पैकेट': 'packet',
       'bottle': 'bottle', 'bottles': 'bottle', 'बोतल': 'bottle',
-      'liter': 'liter', 'liters': 'liter', 'l': 'liter', 'लीटर': 'liter'
+      'liter': 'liter', 'liters': 'liter', 'l': 'liter', 'लीटर': 'liter',
+      'पाव': '250g', 'paav': '250g', 'pav': '250g' // Quarter kg/250g commonly used in India
     };
     
     for (const pattern of quantityPatterns) {
@@ -243,18 +248,30 @@ export class SpeechService {
         let product: string;
         
         if (match.length === 4) {
-          // Pattern: quantity + unit + product (the most common pattern)
-          const part1 = match[1]; // quantity
-          const part2 = match[2]; // unit
-          const part3 = match[3]; // product
+          const part1 = match[1];
+          const part2 = match[2]; 
+          const part3 = match[3];
           
-          if (isNaN(Number(part1)) && (part1 in numberWords)) {
-            quantity = numberWords[part1];
+          // Check if this is product + quantity + unit pattern
+          if (part2 in numberWords || !isNaN(Number(part2))) {
+            // Pattern: product + quantity + unit
+            product = part1;
+            if (part2 in numberWords) {
+              quantity = numberWords[part2];
+            } else {
+              quantity = parseFloat(part2);
+            }
+            unit = unitNormalization[part3] || part3;
           } else {
-            quantity = parseFloat(part1);
+            // Pattern: quantity + unit + product
+            if (part1 in numberWords) {
+              quantity = numberWords[part1];
+            } else {
+              quantity = parseFloat(part1);
+            }
+            unit = unitNormalization[part2] || part2;
+            product = part3;
           }
-          unit = unitNormalization[part2] || part2;
-          product = part3;
         } else {
           // Simple pattern: quantity + product (assume kg)
           const part1 = match[1];
