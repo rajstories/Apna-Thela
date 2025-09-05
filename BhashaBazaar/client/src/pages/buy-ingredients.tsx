@@ -221,14 +221,14 @@ export default function BuyIngredients() {
   return (
     <div className="max-w-md mx-auto bg-white min-h-screen">
       {/* Header */}
-      <div className="bg-saffron-600 text-white p-4 fixed top-0 left-0 right-0 z-50 max-w-md mx-auto">
+      <div className="bg-saffron-600 text-black p-4 fixed top-0 left-0 right-0 z-50 max-w-md mx-auto">
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-3">
             <Button
               variant="ghost"
               size="sm"
               onClick={() => navigate('/')}
-              className="text-white hover:bg-saffron-700"
+              className="text-black hover:bg-saffron-700"
             >
               <ArrowLeft className="h-5 w-5" />
             </Button>
@@ -239,7 +239,7 @@ export default function BuyIngredients() {
           </div>
           <Dialog open={isCartOpen} onOpenChange={setIsCartOpen}>
             <DialogTrigger asChild>
-              <Button variant="ghost" size="sm" className="relative text-white hover:bg-saffron-700">
+              <Button variant="ghost" size="sm" className="relative text-black hover:bg-saffron-700">
                 <ShoppingCart className="h-5 w-5" />
                 {cartItems.length > 0 && (
                   <Badge className="absolute -top-2 -right-2 h-5 w-5 rounded-full bg-red-500 text-xs">
