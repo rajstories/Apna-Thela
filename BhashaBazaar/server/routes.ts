@@ -136,6 +136,38 @@ export function registerRoutes(app: Express) {
     }
   });
 
+  app.post("/api/inventory", async (req, res) => {
+    try {
+      const { name, nameHi, nameBn, category, quantity, unit, minThreshold, pricePerUnit } = req.body;
+      
+      // Validate required fields
+      if (!name || !category || quantity === undefined || !unit || !pricePerUnit) {
+        return res.status(400).json({ error: 'Missing required fields' });
+      }
+      
+      const [newItem] = await db
+        .insert(inventoryItems)
+        .values({
+          name,
+          nameHi: nameHi || name,
+          nameBn: nameBn || name,
+          category,
+          quantity: parseInt(quantity),
+          unit,
+          minThreshold: parseInt(minThreshold) || 5,
+          pricePerUnit,
+          stockStatus: parseInt(quantity) <= (parseInt(minThreshold) || 5) ? 'low' : 'full',
+          lastUpdated: new Date()
+        })
+        .returning();
+      
+      res.json(newItem);
+    } catch (error) {
+      console.error('Error adding inventory item:', error);
+      res.status(500).json({ error: 'Failed to add inventory item' });
+    }
+  });
+
   // Update stock status route
   app.patch("/api/inventory/:id/status", async (req, res) => {
     try {
