@@ -19,10 +19,9 @@ export interface VoiceOrderResult {
 
 // Dynamic platform search URLs for unlimited product search
 const PLATFORMS = [
-  { name: 'BigBasket', searchUrl: 'https://www.bigbasket.com/ps/?q=', priority: 0.35 },
-  { name: 'Amazon Fresh', searchUrl: 'https://www.amazon.in/s?k=', priority: 0.3 },
-  { name: 'JioMart', searchUrl: 'https://www.jiomart.com/search/', priority: 0.2 },
-  { name: 'Grofers/BlinkIt', searchUrl: 'https://grofers.com/search/?query=', priority: 0.15 }
+  { name: 'BigBasket', searchUrl: 'https://www.bigbasket.com/ps/?q=', priority: 0.4 },
+  { name: 'Amazon Fresh', searchUrl: 'https://www.amazon.in/s?k=', priority: 0.35 },
+  { name: 'JioMart', searchUrl: 'https://www.jiomart.com/search/', priority: 0.25 }
 ];
 
 export class VoiceShoppingService {
@@ -106,7 +105,7 @@ export class VoiceShoppingService {
       'हल्दी': 'turmeric', 'haldi': 'turmeric',
       'मिर्च पाउडर': 'chili powder', 'mirch powder': 'chili powder', 'lal mirch': 'red chili powder',
       'धनिया पाउडर': 'coriander powder', 'dhania powder': 'coriander powder',
-      'जीरा': 'cumin', 'jeera': 'cumin',
+      'जीरा': 'cumin', 'jeera': 'cumin', 'जरा': 'cumin', 'jara': 'cumin', // Common speech recognition error
       'राई': 'mustard seeds', 'rai': 'mustard seeds', 'sarson': 'mustard seeds',
       'तेज पत्ता': 'bay leaves', 'tej patta': 'bay leaves',
       'दालचीनी': 'cinnamon', 'dalchini': 'cinnamon',
@@ -170,6 +169,24 @@ export class VoiceShoppingService {
     for (const [original, translation] of Object.entries(translations)) {
       if (lowerName.includes(original) || original.includes(lowerName)) {
         return translation;
+      }
+    }
+    
+    // Handle common speech recognition errors
+    const commonErrors: Record<string, string> = {
+      'जरा': 'cumin',           // जीरा mishearing
+      'पाउंड जरा': 'cumin',     // Common phrase mishearing
+      'पावड जरा': 'cumin',     // Another variation
+      'जेरा': 'cumin',          // Another variation
+      'झरा': 'cumin',           // Another variation
+      'आलु': 'potato',          // आलू variation
+      'पयाज': 'onion',          // प्याज variation
+      'टमटर': 'tomato'          // टमाटर variation
+    };
+    
+    for (const [error, correct] of Object.entries(commonErrors)) {
+      if (lowerName.includes(error)) {
+        return correct;
       }
     }
     

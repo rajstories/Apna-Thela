@@ -146,14 +146,26 @@ export default function Home() {
         setTimeout(() => {
           console.log('Redirecting to:', result.redirectUrl);
           try {
-            window.open(result.redirectUrl, '_blank');
-            setShowVoiceOrderModal(false);
-            setOrderText('');
-            setOrderResult(null);
+            const opened = window.open(result.redirectUrl, '_blank');
+            if (!opened) {
+              // If popup was blocked, try direct navigation
+              console.log('Popup blocked, trying direct navigation');
+              window.location.href = result.redirectUrl!;
+            } else {
+              setShowVoiceOrderModal(false);
+              setOrderText('');
+              setOrderResult(null);
+            }
           } catch (error) {
             console.error('Failed to redirect:', error);
-            // Fallback: try assigning to window.location
-            window.location.href = result.redirectUrl!;
+            // Show error message to user
+            toast({
+              title: language === 'hi' ? 'रीडायरेक्ट त्रुटि' : 'Redirect Error',
+              description: language === 'hi' ? 
+                'सीधे साइट पर जाएं या URL कॉपी करें' : 
+                'Please go to the site directly or copy the URL',
+              variant: 'destructive',
+            });
           }
         }, 2000);
       } else {
