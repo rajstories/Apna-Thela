@@ -101,7 +101,7 @@ export async function seedMarketplaceData() {
     ];
 
     console.log('Inserting suppliers...');
-    await db.insert(suppliers).values(supplierData);
+    await db.insert(suppliers).values(supplierData).onConflictDoNothing();
     console.log(`Inserted ${supplierData.length} suppliers`);
 
     // Insert products with real prices and external URLs

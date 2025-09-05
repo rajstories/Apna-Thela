@@ -14,6 +14,7 @@ import { useLanguage } from '@/hooks/use-language';
 import { useSpeech } from '@/hooks/use-speech';
 import { useToast } from '@/hooks/use-toast';
 import { getTranslation, getRandomTagline } from '@/lib/i18n';
+import { voiceShoppingService } from '@/lib/voice-shopping';
 import { ShoppingCart, Package, Mic, MapPin, Calculator, HelpCircle, Globe, User, Volume2, Wallet, Check, RotateCcw } from 'lucide-react';
 import ApnaThelaLogo from '@/assets/apna-thela-logo.svg';
 import { useLocation } from 'wouter';
@@ -26,6 +27,15 @@ export default function Home() {
   const [showCalculator, setShowCalculator] = useState(false);
   const [orderText, setOrderText] = useState('');
   const [isRecording, setIsRecording] = useState(false);
+  const [isProcessingOrder, setIsProcessingOrder] = useState(false);
+  const [orderResult, setOrderResult] = useState<{
+    success: boolean;
+    message: string;
+    redirectUrl?: string;
+    productName?: string;
+    price?: string;
+    supplier?: string;
+  } | null>(null);
   const { language, setLanguage, isChangingLanguage } = useLanguage();
   const { speak, startListening, isListening } = useSpeech();
   const { toast } = useToast();
@@ -81,7 +91,7 @@ export default function Home() {
     });
   };
 
-  const confirmOrder = () => {
+  const confirmOrder = async () => {
     if (!orderText.trim()) {
       toast({
         title: language === 'hi' ? 'त्रुटि' : 'Error',
@@ -91,18 +101,65 @@ export default function Home() {
       return;
     }
 
-    // Store order (for now just show success)
-    toast({
-      title: language === 'hi' ? 'सफल!' : 'Success!',
-      description: language === 'hi' ? 'ऑर्डर सफलतापूर्वक दर्ज किया गया' : 'Order placed successfully!',
-    });
-    
-    setShowVoiceOrderModal(false);
-    setOrderText('');
+    setIsProcessingOrder(true);
+    setOrderResult(null);
+
+    try {
+      // Process the voice order through our voice shopping service
+      const result = await voiceShoppingService.processVoiceOrder(orderText);
+      
+      setOrderResult({
+        success: result.success,
+        message: result.message,
+        redirectUrl: result.redirectUrl,
+        productName: result.product?.productName,
+        price: result.product?.pricePerUnit,
+        supplier: result.product?.supplier.name
+      });
+
+      if (result.success && result.redirectUrl) {
+        // Show success message with product details
+        toast({
+          title: language === 'hi' ? 'उत्पाद मिला!' : 'Product Found!',
+          description: result.message,
+          duration: 3000,
+        });
+
+        // Auto-redirect after a short delay to show the success message
+        setTimeout(() => {
+          window.open(result.redirectUrl, '_blank');
+          setShowVoiceOrderModal(false);
+          setOrderText('');
+          setOrderResult(null);
+        }, 2000);
+      } else {
+        toast({
+          title: language === 'hi' ? 'त्रुटि' : 'Error',
+          description: result.message,
+          variant: 'destructive',
+        });
+      }
+    } catch (error) {
+      console.error('Error processing voice order:', error);
+      toast({
+        title: language === 'hi' ? 'त्रुटि' : 'Error',
+        description: language === 'hi' ? 
+          'ऑर्डर प्रोसेस करने में समस्या हुई' : 
+          'Failed to process order. Please try again.',
+        variant: 'destructive',
+      });
+      setOrderResult({
+        success: false,
+        message: 'Technical error occurred. Please try again.'
+      });
+    } finally {
+      setIsProcessingOrder(false);
+    }
   };
 
   const reRecord = () => {
     setOrderText('');
+    setOrderResult(null);
     startRecording();
   };
 
@@ -516,6 +573,74 @@ export default function Home() {
               </div>
             )}
 
+            {/* Processing Status */}
+            {isProcessingOrder && (
+              <div className="bg-blue-50 p-4 rounded-lg text-center">
+                <div className="animate-spin w-6 h-6 border-2 border-blue-500 border-t-transparent rounded-full mx-auto mb-2"></div>
+                <p className="text-blue-700 font-medium">
+                  {language === 'hi' ? 'ऑर्डर प्रोसेस हो रहा है...' : 'Processing your order...'}
+                </p>
+                <p className="text-blue-600 text-sm mt-1">
+                  {language === 'hi' ? 'मार्केटप्लेस में उत्पाद खोज रहे हैं' : 'Searching marketplace for products'}
+                </p>
+              </div>
+            )}
+
+            {/* Order Result */}
+            {orderResult && (
+              <div className={`p-4 rounded-lg ${
+                orderResult.success ? 'bg-green-50 border border-green-200' : 'bg-red-50 border border-red-200'
+              }`}>
+                {orderResult.success ? (
+                  <div>
+                    <div className="flex items-center mb-3">
+                      <Check className="w-5 h-5 text-green-600 mr-2" />
+                      <h4 className="font-medium text-green-800">
+                        {language === 'hi' ? 'उत्पाद मिला!' : 'Product Found!'}
+                      </h4>
+                    </div>
+                    
+                    {orderResult.productName && (
+                      <div className="bg-white p-3 rounded border mb-3">
+                        <div className="flex justify-between items-start mb-2">
+                          <span className="font-medium text-gray-900">{orderResult.productName}</span>
+                          {orderResult.price && (
+                            <span className="text-green-600 font-bold">₹{orderResult.price}/kg</span>
+                          )}
+                        </div>
+                        {orderResult.supplier && (
+                          <p className="text-sm text-gray-600">
+                            {language === 'hi' ? 'विक्रेता: ' : 'Supplier: '}{orderResult.supplier}
+                          </p>
+                        )}
+                      </div>
+                    )}
+                    
+                    <p className="text-green-700 text-sm mb-3">{orderResult.message}</p>
+                    
+                    <div className="flex items-center justify-center space-x-2 text-blue-600">
+                      <div className="animate-pulse w-2 h-2 bg-blue-500 rounded-full"></div>
+                      <span className="text-sm">
+                        {language === 'hi' ? 'खरीदारी के लिए रीडायरेक्ट हो रहा...' : 'Redirecting to buy...'}
+                      </span>
+                    </div>
+                  </div>
+                ) : (
+                  <div>
+                    <div className="flex items-center mb-2">
+                      <div className="w-5 h-5 bg-red-500 rounded-full flex items-center justify-center mr-2">
+                        <span className="text-white text-xs">!</span>
+                      </div>
+                      <h4 className="font-medium text-red-800">
+                        {language === 'hi' ? 'उत्पाद नहीं मिला' : 'Product Not Found'}
+                      </h4>
+                    </div>
+                    <p className="text-red-700 text-sm">{orderResult.message}</p>
+                  </div>
+                )}
+              </div>
+            )}
+
             {/* Action Buttons */}
             <div className="flex space-x-2">
               <Button 
@@ -526,12 +651,13 @@ export default function Home() {
                 {language === 'hi' ? 'रद्द करें' : 'Cancel'}
               </Button>
               
-              {orderText && (
+              {orderText && !orderResult?.success && (
                 <>
                   <Button 
                     onClick={reRecord}
                     variant="outline"
                     className="flex-1 border-orange-200 text-orange-600 hover:bg-orange-50"
+                    disabled={isProcessingOrder}
                   >
                     <RotateCcw className="w-4 h-4 mr-2" />
                     {language === 'hi' ? 'दोबारा बोलें' : 'Re-record'}
@@ -540,11 +666,34 @@ export default function Home() {
                   <Button 
                     onClick={confirmOrder}
                     className="flex-1 bg-green-600 hover:bg-green-700"
+                    disabled={isProcessingOrder}
                   >
-                    <Check className="w-4 h-4 mr-2" />
-                    {language === 'hi' ? 'पुष्टि करें' : 'Confirm'}
+                    {isProcessingOrder ? (
+                      <div className="animate-spin w-4 h-4 border-2 border-white border-t-transparent rounded-full mr-2"></div>
+                    ) : (
+                      <ShoppingCart className="w-4 h-4 mr-2" />
+                    )}
+                    {isProcessingOrder ? 
+                      (language === 'hi' ? 'खोज रहा...' : 'Searching...') :
+                      (language === 'hi' ? 'अभी खरीदें' : 'Buy Now')
+                    }
                   </Button>
                 </>
+              )}
+              
+              {orderResult?.success && orderResult.redirectUrl && (
+                <Button 
+                  onClick={() => {
+                    window.open(orderResult.redirectUrl, '_blank');
+                    setShowVoiceOrderModal(false);
+                    setOrderText('');
+                    setOrderResult(null);
+                  }}
+                  className="flex-1 bg-blue-600 hover:bg-blue-700"
+                >
+                  <ShoppingCart className="w-4 h-4 mr-2" />
+                  {language === 'hi' ? 'अभी खरीदें' : 'Buy Now'}
+                </Button>
               )}
             </div>
           </div>

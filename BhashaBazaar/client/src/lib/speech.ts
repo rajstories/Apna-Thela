@@ -191,6 +191,123 @@ export class SpeechService {
     return 'hi';
   }
 
+  // Parse voice order to extract quantity and product name
+  parseVoiceOrder(transcript: string): { quantity: number; unit: string; product: string } | null {
+    const lowerTranscript = transcript.toLowerCase().trim();
+    console.log('Parsing voice order:', lowerTranscript);
+    
+    // Patterns for quantity and units in multiple languages
+    const quantityPatterns = [
+      // English patterns
+      /(\d+(?:\.\d+)?)\s*(kg|kilo|kilogram|grams?|g|lbs?|pounds?|piece|pieces|pcs|packet|packets|bottle|bottles|liter|liters?|l)\s+(.+)/i,
+      /(\d+(?:\.\d+)?)\s+(.+?)\s*(kg|kilo|kilogram|grams?|g|lbs?|pounds?|piece|pieces|pcs|packet|packets|bottle|bottles|liter|liters?|l)/i,
+      
+      // Hindi patterns  
+      /(\d+(?:\.\d+)?)\s*(किलो|किग्रा|ग्राम|पैकेट|बोतल|लीटर|पीस)\s+(.+)/i,
+      /(\d+(?:\.\d+)?)\s+(.+?)\s*(किलो|किग्रा|ग्राम|पैकेट|बोतल|लीटर|पीस)/i,
+      
+      // Number words in Hindi
+      /(एक|दो|तीन|चार|पांच|पाँच|छह|सात|आठ|नौ|दस|ek|do|teen|char|panch|paanch|cheh|saat|aath|nau|das)\s*(किलो|किग्रा|ग्राम|पैकेट|बोतल|लीटर|पीस)\s+(.+)/i,
+      /(एक|दो|तीन|चार|पांच|पाँच|छह|सात|आठ|नौ|दस|ek|do|teen|char|panch|paanch|cheh|saat|aath|nau|das)\s+(.+?)\s*(किलो|किग्रा|ग्राम|पैकेट|बोतल|लीटर|पीस)/i,
+      
+      // Simple patterns without units (assume kg)
+      /(\d+(?:\.\d+)?)\s+(.+)/i,
+      /(एक|दो|तीन|चार|पांच|पाँच|छह|सात|आठ|नौ|दस|ek|do|teen|char|panch|paanch|cheh|saat|aath|nau|das)\s+(.+)/i
+    ];
+    
+    // Number word mappings
+    const numberWords: Record<string, number> = {
+      'एक': 1, 'ek': 1,
+      'दो': 2, 'do': 2,
+      'तीन': 3, 'teen': 3,
+      'चार': 4, 'char': 4,
+      'पांच': 5, 'पाँच': 5, 'panch': 5, 'paanch': 5,
+      'छह': 6, 'cheh': 6,
+      'सात': 7, 'saat': 7,
+      'आठ': 8, 'aath': 8,
+      'नौ': 9, 'nau': 9,
+      'दस': 10, 'das': 10
+    };
+    
+    // Unit normalization
+    const unitNormalization: Record<string, string> = {
+      'kilo': 'kg', 'kilogram': 'kg', 'किलो': 'kg', 'किग्रा': 'kg',
+      'grams': 'g', 'gram': 'g', 'ग्राम': 'g',
+      'lbs': 'kg', 'pounds': 'kg', 'pound': 'kg',
+      'piece': 'piece', 'pieces': 'piece', 'pcs': 'piece', 'पीस': 'piece',
+      'packet': 'packet', 'packets': 'packet', 'पैकेट': 'packet',
+      'bottle': 'bottle', 'bottles': 'bottle', 'बोतल': 'bottle',
+      'liter': 'liter', 'liters': 'liter', 'l': 'liter', 'लीटर': 'liter'
+    };
+    
+    for (const pattern of quantityPatterns) {
+      const match = lowerTranscript.match(pattern);
+      if (match) {
+        let quantity: number;
+        let unit = 'kg'; // default unit
+        let product: string;
+        
+        if (match.length === 3) {
+          // Pattern: quantity + unit + product OR quantity + product + unit
+          const part1 = match[1];
+          const part2 = match[2];
+          const part3 = match[3] || '';
+          
+          // Try to determine which part is quantity, unit, and product
+          if (isNaN(Number(part1)) && (part1 in numberWords)) {
+            quantity = numberWords[part1];
+            if (part2 in unitNormalization) {
+              unit = unitNormalization[part2];
+              product = part3;
+            } else {
+              product = part2 + (part3 ? ' ' + part3 : '');
+            }
+          } else {
+            quantity = parseFloat(part1);
+            if (part2 in unitNormalization) {
+              unit = unitNormalization[part2];
+              product = part3;
+            } else {
+              product = part2 + (part3 ? ' ' + part3 : '');
+            }
+          }
+        } else if (match.length === 4) {
+          // Pattern: quantity + product + unit
+          const part1 = match[1];
+          const part2 = match[2];
+          const part3 = match[3];
+          
+          if (isNaN(Number(part1)) && (part1 in numberWords)) {
+            quantity = numberWords[part1];
+          } else {
+            quantity = parseFloat(part1);
+          }
+          product = part2;
+          unit = unitNormalization[part3] || part3;
+        } else {
+          // Simple pattern: quantity + product (assume kg)
+          const part1 = match[1];
+          const part2 = match[2];
+          
+          if (isNaN(Number(part1)) && (part1 in numberWords)) {
+            quantity = numberWords[part1];
+          } else {
+            quantity = parseFloat(part1);
+          }
+          product = part2;
+        }
+        
+        if (quantity > 0 && product && product.trim().length > 0) {
+          console.log('Parsed order:', { quantity, unit, product: product.trim() });
+          return { quantity, unit, product: product.trim() };
+        }
+      }
+    }
+    
+    console.log('Could not parse voice order');
+    return null;
+  }
+
   // Extract item name from Hindi price inquiries
   extractItemFromHindiQuery(transcript: string): string | null {
     const lowerTranscript = transcript.toLowerCase();
