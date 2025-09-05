@@ -105,8 +105,25 @@ export default function Home() {
     setOrderResult(null);
 
     try {
-      // Process the voice order through our voice shopping service
-      const result = await voiceShoppingService.processVoiceOrder(orderText);
+      // Process the voice order through our voice shopping service with language detection
+      const result = await voiceShoppingService.processVoiceOrder(orderText, (detectedLanguage) => {
+        // Auto-switch interface language based on detected speech
+        console.log('Auto-switching interface to language:', detectedLanguage);
+        if (detectedLanguage !== language) {
+          setLanguage(detectedLanguage);
+          
+          // Show language switch notification
+          toast({
+            title: detectedLanguage === 'hi' ? 'भाषा बदली गई' : detectedLanguage === 'bn' ? 'ভাষা পরিবর্তিত' : 'Language Changed',
+            description: detectedLanguage === 'hi' 
+              ? 'आपकी आवाज़ के आधार पर हिन्दी में स्विच किया गया'
+              : detectedLanguage === 'bn' 
+              ? 'আপনার কণ্ঠস্বরের ভিত্তিতে বাংলায় স্যুইচ করা হয়েছে'
+              : 'Switched to English based on your voice',
+            duration: 2000,
+          });
+        }
+      });
       
       setOrderResult({
         success: result.success,
@@ -566,6 +583,14 @@ export default function Home() {
                   'जैसे: "5 किलो टमाटर, 2 किलो आलू"' : 
                   'Example: "5 kilo tomato, 2 kilo potato"'}
               </p>
+              <div className="mt-2 flex items-center justify-center gap-1 text-xs text-blue-600 bg-blue-50 py-1 px-2 rounded">
+                <Globe className="w-3 h-3" />
+                <span>
+                  {language === 'hi' ? 
+                    'स्वचालित भाषा पहचान सक्रिय' : 
+                    'Auto language detection active'}
+                </span>
+              </div>
             </div>
 
             {/* Order Text Display */}

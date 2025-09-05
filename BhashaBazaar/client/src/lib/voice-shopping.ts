@@ -19,15 +19,48 @@ export interface VoiceOrderResult {
 
 // Dynamic platform search URLs for unlimited product search
 const PLATFORMS = [
-  { name: 'BigBasket', searchUrl: 'https://www.bigbasket.com/ps/?q=', priority: 0.3 },
-  { name: 'Zepto', searchUrl: 'https://www.zepto.co.in/search?query=', priority: 0.25 },
-  { name: 'BlinkIt', searchUrl: 'https://blinkit.com/search?q=', priority: 0.2 },
-  { name: 'Instamart', searchUrl: 'https://www.swiggy.com/instamart/search?query=', priority: 0.15 },
-  { name: 'JioMart', searchUrl: 'https://www.jiomart.com/search/', priority: 0.05 },
-  { name: 'Amazon Fresh', searchUrl: 'https://www.amazon.in/s?k=', priority: 0.05 }
+  { name: 'BigBasket', searchUrl: 'https://www.bigbasket.com/ps/?q=', priority: 0.35 },
+  { name: 'Amazon Fresh', searchUrl: 'https://www.amazon.in/s?k=', priority: 0.3 },
+  { name: 'JioMart', searchUrl: 'https://www.jiomart.com/search/', priority: 0.2 },
+  { name: 'Grofers/BlinkIt', searchUrl: 'https://grofers.com/search/?query=', priority: 0.15 }
 ];
 
 export class VoiceShoppingService {
+  // Detect language from voice input using pattern recognition
+  private detectLanguageFromInput(input: string): 'hi' | 'en' | 'bn' {
+    const devanagariPattern = /[\u0900-\u097F]/; // Hindi/Devanagari script
+    const bengaliPattern = /[\u0980-\u09FF]/; // Bengali script
+    
+    // Hindi words and patterns
+    const hindiWords = ['किलो', 'ग्राम', 'पीस', 'पाव', 'चाहिए', 'दे', 'दो', 'एक', 'दूध', 'आलू', 'प्याज', 'टमाटर', 'अदरक'];
+    const englishWords = ['kg', 'kilo', 'gram', 'piece', 'want', 'need', 'give', 'one', 'two'];
+    
+    // Check for Devanagari script
+    if (devanagariPattern.test(input)) {
+      return 'hi';
+    }
+    
+    // Check for Bengali script  
+    if (bengaliPattern.test(input)) {
+      return 'bn';
+    }
+    
+    // Check for Hindi words in Roman script
+    const lowerInput = input.toLowerCase();
+    const hindiWordCount = hindiWords.filter(word => lowerInput.includes(word.toLowerCase())).length;
+    const englishWordCount = englishWords.filter(word => lowerInput.includes(word)).length;
+    
+    // Also check for transliterated Hindi words
+    const hindiTransliterations = ['aloo', 'pyaz', 'tamatar', 'adrak', 'doodh', 'chawal', 'dal', 'paav', 'chahiye'];
+    const hindiTranslitCount = hindiTransliterations.filter(word => lowerInput.includes(word)).length;
+    
+    if (hindiWordCount > 0 || hindiTranslitCount > englishWordCount) {
+      return 'hi';
+    }
+    
+    return 'en'; // Default to English
+  }
+
   // Comprehensive product name translation from Hindi/regional to English
   private translateProductName(productName: string): string {
     const translations: Record<string, string> = {
@@ -160,16 +193,31 @@ export class VoiceShoppingService {
     return PLATFORMS[0];
   }
 
-  async processVoiceOrder(transcript: string): Promise<VoiceOrderResult> {
+  async processVoiceOrder(transcript: string, onLanguageDetected?: (language: 'hi' | 'en' | 'bn') => void): Promise<VoiceOrderResult> {
     console.log('Processing voice order:', transcript);
     
     try {
+      // Detect language from voice input
+      const detectedLanguage = this.detectLanguageFromInput(transcript);
+      console.log('Detected language:', detectedLanguage);
+      
+      // Notify about language detection for UI switching
+      if (onLanguageDetected) {
+        onLanguageDetected(detectedLanguage);
+      }
+      
       // Parse the voice order
       const parsedOrder = speechService.parseVoiceOrder(transcript);
       if (!parsedOrder) {
+        const errorMessage = detectedLanguage === 'hi' 
+          ? 'समझ नहीं आया। कृपया "1 किलो आलू" जैसे कहें।'
+          : detectedLanguage === 'bn'
+          ? 'বুঝতে পারিনি। দয়া করে "১ কেজি আলু" এর মতো বলুন।'
+          : 'Could not understand the order. Please try saying something like "1 kg potato"';
+          
         return {
           success: false,
-          message: 'Could not understand the order. Please try saying something like "1 kg potato" or "एक किलो आलू"'
+          message: errorMessage
         };
       }
       
@@ -189,9 +237,16 @@ export class VoiceShoppingService {
       
       console.log('Search URL:', redirectUrl);
       
+      // Create localized success message
+      const successMessage = detectedLanguage === 'hi'
+        ? `${parsedOrder.quantity} ${parsedOrder.unit} ${parsedOrder.product} के लिए ${selectedPlatform.name} पर खोज रहे हैं...`
+        : detectedLanguage === 'bn' 
+        ? `${parsedOrder.quantity} ${parsedOrder.unit} ${parsedOrder.product} এর জন্য ${selectedPlatform.name} এ খোঁজ করছি...`
+        : `Searching for ${parsedOrder.quantity} ${parsedOrder.unit} ${parsedOrder.product} on ${selectedPlatform.name}...`;
+      
       return {
         success: true,
-        message: `Searching for ${parsedOrder.quantity} ${parsedOrder.unit} ${parsedOrder.product} on ${selectedPlatform.name}...`,
+        message: successMessage,
         redirectUrl: redirectUrl,
         product: {
           name: parsedOrder.product,
