@@ -414,7 +414,7 @@ export default function BuyIngredients() {
                 </div>
 
                 {/* Shopping Controls - Two Button Layout */}
-                <div className="space-y-3">
+                <div className="space-y-4">
                   {/* Quantity Selector */}
                   <div className="flex items-center justify-center space-x-4 bg-gray-50 rounded-lg py-3 px-4">
                     <span className="text-sm font-medium text-gray-700">
@@ -452,23 +452,26 @@ export default function BuyIngredients() {
                     </div>
                   </div>
 
-                    {/* Best Deals Button */}
+                  {/* Two Button Grid Layout with Better Space Utilization */}
+                  <div className="grid grid-cols-2 gap-4 px-2">
+                    {/* Best Deals Button - Left */}
                     <Button
                       variant="outline"
                       onClick={() => {
                         setBestDealsProduct(getProductName(product));
                         setIsBestDealsOpen(true);
                       }}
-                      className="h-12 bg-gradient-to-br from-amber-50 to-orange-50 border-amber-300 hover:from-amber-100 hover:to-orange-100 hover:border-amber-400 transition-all duration-200 shadow-sm"
+                      className="h-14 w-full bg-gradient-to-br from-amber-50 to-orange-50 border-amber-300 hover:from-amber-100 hover:to-orange-100 hover:border-amber-400 transition-all duration-200 shadow-sm"
                     >
                       <div className="flex flex-col items-center justify-center space-y-1">
-                        <TrendingDown className="h-4 w-4 text-amber-600" />
-                        <span className="text-xs font-semibold text-amber-700">
+                        <TrendingDown className="h-5 w-5 text-amber-600" />
+                        <span className="text-sm font-semibold text-amber-700">
                           {language === 'hi' ? 'बेस्ट डील्स' : 'Best Deals'}
                         </span>
                       </div>
                     </Button>
-                    {/* Buy Now Button - Right Side */}
+                    
+                    {/* Buy Now Button - Right */}
                     {product.onlineStoreUrl ? (
                       <Button
                         onClick={() => {
@@ -480,11 +483,11 @@ export default function BuyIngredients() {
                               : `Shopping for ${quantities[product.id] || 1} ${product.unit}`,
                           });
                         }}
-                        className="h-12 bg-gradient-to-br from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 transition-all duration-200 shadow-sm"
+                        className="h-14 w-full bg-gradient-to-br from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 transition-all duration-200 shadow-sm"
                       >
                         <div className="flex flex-col items-center justify-center space-y-1 text-white">
-                          <ExternalLink className="h-4 w-4" />
-                          <span className="text-xs font-semibold">
+                          <ExternalLink className="h-5 w-5" />
+                          <span className="text-sm font-semibold">
                             {language === 'hi' ? 'अभी खरीदें' : 
                              language === 'bn' ? 'এখনই কিনুন' : 
                              language === 'mr' ? 'आता खरेदী करा' : 
@@ -498,17 +501,18 @@ export default function BuyIngredients() {
                       <Button
                         onClick={() => handleAddToCart(product.id)}
                         disabled={addToCartMutation.isPending}
-                        className="h-12 bg-gradient-to-br from-saffron-600 to-orange-600 hover:from-saffron-700 hover:to-orange-700 transition-all duration-200 shadow-sm"
+                        className="h-14 w-full bg-gradient-to-br from-saffron-600 to-orange-600 hover:from-saffron-700 hover:to-orange-700 transition-all duration-200 shadow-sm"
                       >
                         <div className="flex flex-col items-center justify-center space-y-1 text-white">
-                          <ShoppingCart className="h-4 w-4" />
-                          <span className="text-xs font-semibold">
+                          <ShoppingCart className="h-5 w-5" />
+                          <span className="text-sm font-semibold">
                             {language === 'hi' ? 'कार्ट में डालें' : 'Add to Cart'}
                           </span>
                         </div>
                       </Button>
                     )}
                   </div>
+                </div>
                 </CardContent>
             </Card>
           ))}
