@@ -27,34 +27,87 @@ export default function NearbySellers() {
   const [, navigate] = useLocation();
   const [userLocation, setUserLocation] = useState<{lat: number, lng: number} | null>(null);
   const [userPincode, setUserPincode] = useState<string>('');
-  const [showLocationPrompt, setShowLocationPrompt] = useState(false);
+  const [showLocationPrompt, setShowLocationPrompt] = useState(true); // Show by default
+  const [locationPermissionState, setLocationPermissionState] = useState<'requesting' | 'granted' | 'denied' | 'unavailable'>('requesting');
+  const [isGettingLocation, setIsGettingLocation] = useState(false);
   const [manualPincode, setManualPincode] = useState('');
   const [languageFilter, setLanguageFilter] = useState<string>('all');
   const [itemFilter, setItemFilter] = useState<string>('all');
   const [searchQuery, setSearchQuery] = useState('');
 
-  // Get user's current location or prompt for pincode
+  // Check for saved location preference and current location capability
   useEffect(() => {
+    const savedLocation = localStorage.getItem('userLocation');
     const savedPincode = localStorage.getItem('userPincode');
-    if (savedPincode) {
+    
+    if (savedLocation) {
+      try {
+        const location = JSON.parse(savedLocation);
+        setUserLocation(location);
+        setLocationPermissionState('granted');
+        setShowLocationPrompt(false);
+      } catch (error) {
+        console.error('Error parsing saved location:', error);
+      }
+    } else if (savedPincode) {
       setUserPincode(savedPincode);
-    } else if (navigator.geolocation) {
-      navigator.geolocation.getCurrentPosition(
-        (position) => {
-          setUserLocation({
-            lat: position.coords.latitude,
-            lng: position.coords.longitude
-          });
-        },
-        (error) => {
-          console.log('Location access denied:', error);
-          setShowLocationPrompt(true);
-        }
-      );
-    } else {
-      setShowLocationPrompt(true);
+      setLocationPermissionState('denied');
+      setShowLocationPrompt(false);
+    }
+    
+    // Check if geolocation is available
+    if (!navigator.geolocation) {
+      setLocationPermissionState('unavailable');
     }
   }, []);
+
+  // Function to request location permission
+  const requestLocationPermission = async () => {
+    if (!navigator.geolocation) {
+      setLocationPermissionState('unavailable');
+      return;
+    }
+
+    setIsGettingLocation(true);
+    setLocationPermissionState('requesting');
+    
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        const location = {
+          lat: position.coords.latitude,
+          lng: position.coords.longitude
+        };
+        setUserLocation(location);
+        setLocationPermissionState('granted');
+        setShowLocationPrompt(false);
+        setIsGettingLocation(false);
+        
+        // Save location for future use
+        localStorage.setItem('userLocation', JSON.stringify(location));
+        
+        toast({
+          title: language === 'hi' ? 'लोकेशन मिल गई!' : 'Location Found!',
+          description: language === 'hi' ? 'आपके आस-पास के विक्रेता खोज रहे हैं...' : 'Finding vendors near you...',
+        });
+      },
+      (error) => {
+        console.error('Location access error:', error);
+        setLocationPermissionState('denied');
+        setIsGettingLocation(false);
+        
+        toast({
+          title: language === 'hi' ? 'लोकेशन की अनुमति नहीं मिली' : 'Location Permission Denied',
+          description: language === 'hi' ? 'कृपया मैन्युअल रूप से पिनकोड डालें' : 'Please enter your pincode manually',
+          variant: 'destructive'
+        });
+      },
+      { 
+        enableHighAccuracy: true, 
+        timeout: 10000, 
+        maximumAge: 300000 // 5 minutes
+      }
+    );
+  };
 
   // Fetch nearby vendors
   const { data: vendors = [], isLoading } = useQuery<VendorWithDistance[]>({
@@ -172,48 +225,110 @@ export default function NearbySellers() {
     return (
       <div className="min-h-screen bg-gray-50 p-4 flex items-center justify-center">
         <Card className="w-full max-w-md">
-          <CardHeader>
-            <CardTitle className="flex items-center space-x-2">
-              <Navigation className="w-5 h-5 text-blue-600" />
-              <span>
-                {language === 'hi' ? 'अपना इलाका बताएं' : 
-                 language === 'bn' ? 'আপনার এলাকা বলুন' : 
-                 language === 'mr' ? 'तुमचा परिसर सांगा' : 
-                 language === 'ta' ? 'உங்கள் பகுதியைச் சொல்லுங்கள்' : 
-                 language === 'te' ? 'మీ ప్రాంతాన్ని చెప్పండి' : 
-                 'Tell us your area'}
-              </span>
+          <CardHeader className="text-center">
+            <div className="mx-auto w-16 h-16 bg-orange-100 rounded-full flex items-center justify-center mb-4">
+              <Navigation className="w-8 h-8 text-orange-600" />
+            </div>
+            <CardTitle className="text-xl">
+              {language === 'hi' ? 'आसपास के विक्रेता खोजें' : 
+               language === 'bn' ? 'কাছাকাছি বিক্রেতাদের খুঁজুন' : 
+               language === 'mr' ? 'जवळचे विक्रेते शोधा' : 
+               language === 'ta' ? 'அருகிலுள்ள விற்பனையாளர்களைத் தேடுங்கள்' : 
+               language === 'te' ? 'సమీప విక్రేతలను వెతకండి' : 
+               'Find Nearby Vendors'}
             </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <p className="text-gray-600 text-sm">
-              {language === 'hi' ? 'आसपास के विक्रेताओं को खोजने के लिए अपना पिनकोड डालें' : 
-               language === 'bn' ? 'কাছাকাছি বিক্রেতাদের খুঁজতে আপনার পিনকোড দিন' : 
-               language === 'mr' ? 'जवळच्या विक्रेत्यांना शोधण्यासाठी तुमचा पिनकोड टाका' : 
-               language === 'ta' ? 'அருகிலுள்ள விற்பனையாளர்களைக் கண்டறிய உங்கள் பின்கோடை உள்ளிடவும்' : 
-               language === 'te' ? 'సమీప విక్రేతలను కనుగొనడానికి మీ పిన్‌కోడ్ నమోదు చేయండి' : 
-               'Enter your pincode to find nearby vendors'}
+            <p className="text-gray-600 text-sm mt-2">
+              {language === 'hi' ? 'असली व्यापारी और सप्लायर तुरंत खोजें' : 
+               language === 'bn' ? 'আসল ব্যবসায়ী এবং সাপ্লায়ার দ্রুত খুঁজুন' : 
+               language === 'mr' ? 'खऱ्या व्यापारी आणि सप्लायर त्वरीत शोधा' : 
+               language === 'ta' ? 'உண்மையான வணிகர்கள் மற்றும் சப்ளையர்களை உடனடியாக கண்டறியுங்கள்' : 
+               language === 'te' ? 'నిజమైన వ్యాపారులు మరియు సప్లైయర్లను వెంటనే కనుగొనండి' : 
+               'Find real businesses and suppliers instantly'}
             </p>
-            <Input
-              type="text"
-              maxLength={6}
-              placeholder={language === 'hi' ? 'पिनकोड (जैसे 110024)' : 'Pincode (e.g. 110024)'}
-              value={manualPincode}
-              onChange={(e) => setManualPincode(e.target.value.replace(/\D/g, ''))}
-              className="text-center text-lg"
-            />
-            <Button 
-              onClick={handlePincodeSubmit} 
-              className="w-full" 
-              disabled={manualPincode.length !== 6}
-            >
-              {language === 'hi' ? 'विक्रेता खोजें' : 
-               language === 'bn' ? 'বিক্রেতা খুঁজুন' : 
-               language === 'mr' ? 'विक्रेते शोधा' : 
-               language === 'ta' ? 'விற்பனையாளர்களைக் கண்டறியவும்' : 
-               language === 'te' ? 'విక్రేతలను కనుగొనండి' : 
-               'Find Vendors'}
-            </Button>
+          </CardHeader>
+          <CardContent className="space-y-6">
+            {/* Location Permission Request */}
+            <div className="space-y-4">
+              <Button
+                onClick={requestLocationPermission}
+                disabled={isGettingLocation || locationPermissionState === 'unavailable'}
+                className="w-full bg-orange-600 hover:bg-orange-700 text-white py-6 text-lg font-medium"
+              >
+                {isGettingLocation ? (
+                  <div className="flex items-center space-x-2">
+                    <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
+                    <span>
+                      {language === 'hi' ? 'लोकेशन ढूंढ रहे हैं...' : 
+                       language === 'bn' ? 'লোকেশন খুঁজছি...' : 
+                       language === 'mr' ? 'स्थान शोधत आहे...' : 
+                       language === 'ta' ? 'இருப்பிடத்தைத் தேடுகிறது...' : 
+                       language === 'te' ? 'స్థానాన్ని వెతుకుతోంది...' : 
+                       'Finding Location...'}
+                    </span>
+                  </div>
+                ) : (
+                  <div className="flex items-center space-x-2">
+                    <MapPin className="w-5 h-5" />
+                    <span>
+                      {language === 'hi' ? 'मेरी लोकेशन का उपयोग करें' : 
+                       language === 'bn' ? 'আমার লোকেশন ব্যবহার করুন' : 
+                       language === 'mr' ? 'माझे स्थान वापरा' : 
+                       language === 'ta' ? 'என் இருப்பிடத்தைப் பயன்படுத்துங்கள்' : 
+                       language === 'te' ? 'నా లొకేషన్ వాడండి' : 
+                       'Use My Location'}
+                    </span>
+                  </div>
+                )}
+              </Button>
+              
+              {locationPermissionState === 'unavailable' && (
+                <Alert>
+                  <AlertDescription>
+                    {language === 'hi' ? 'लोकेशन सेवा उपलब्ध नहीं है। कृपया पिनकोड डालें।' : 
+                     'Location service is not available. Please enter your pincode.'}
+                  </AlertDescription>
+                </Alert>
+              )}
+
+              <div className="flex items-center space-x-2 text-sm text-gray-500">
+                <Shield className="w-4 h-4" />
+                <span>
+                  {language === 'hi' ? 'आपकी जानकारी सुरक्षित है और सिर्फ विक्रेता खोजने के लिए उपयोग होगी' : 
+                   language === 'bn' ? 'আপনার তথ্য নিরাপদ এবং শুধুমাত্র বিক্রেতাদের খোঁজার জন্য ব্যবহৃত হবে' : 
+                   'Your data is safe and only used to find vendors'}
+                </span>
+              </div>
+            </div>
+
+            {/* Manual Pincode Option */}
+            <div className="space-y-3">
+              <Separator />
+              <p className="text-center text-sm text-gray-500">
+                {language === 'hi' ? 'या फिर अपना पिनकोड डालें' : 
+                 language === 'bn' ? 'অথবা আপনার পিনকোড দিন' : 
+                 'Or enter your pincode'}
+              </p>
+              <Input
+                type="text"
+                maxLength={6}
+                placeholder={language === 'hi' ? 'पिनकोड (जैसे 110024)' : 'Pincode (e.g. 110024)'}
+                value={manualPincode}
+                onChange={(e) => setManualPincode(e.target.value.replace(/\D/g, ''))}
+                className="text-center text-lg"
+              />
+              <Button 
+                onClick={handlePincodeSubmit} 
+                className="w-full" 
+                disabled={manualPincode.length !== 6}
+              >
+                {language === 'hi' ? 'विक्रेता खोजें' : 
+                 language === 'bn' ? 'বিক্রেতা খুঁজুন' : 
+                 language === 'mr' ? 'विक्रेते शोधा' : 
+                 language === 'ta' ? 'விற்பனையாளர்களைக் கண்டறியவும்' : 
+                 language === 'te' ? 'విక్రేతలను కనుగొనండి' : 
+                 'Find Vendors'}
+              </Button>
+            </div>
           </CardContent>
         </Card>
       </div>
