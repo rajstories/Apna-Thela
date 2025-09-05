@@ -943,16 +943,17 @@ export function registerRoutes(app: Express) {
             return acc;
           }, new Map());
 
-          // Create diverse suppliers from unique live data
-          const liveSuppliers = Array.from(uniqueLiveData.values()).slice(0, 5).map((price, index) => {
+          // Create diverse suppliers from unique live data - limit to actual unique data count
+          const maxSuppliers = Math.min(uniqueLiveData.size, 3); // Limit to 3 to avoid repetition
+          const liveSuppliers = Array.from(uniqueLiveData.values()).slice(0, maxSuppliers).map((price, index) => {
             // Generate varied supplier names
             const supplierNames = [
               'Market Direct', 'Mandi Direct', 'Wholesale Direct', 'Farm Gate', 'APMC Market'
             ];
             
-            // Generate varied locations within Delhi markets
+            // Generate varied locations within Delhi markets  
             const locations = [
-              'Azadpur Mandi', 'Ghazipur Mandi', 'Okhla Mandi', 'Najafgarh Mandi', 'Narela Mandi'
+              'Azadpur Fruit Market', 'Ghazipur Fruit Market', 'Okhla Wholesale Market', 'Najafgarh Mandi', 'Narela Wholesale Hub'
             ];
             
             // Different pincodes for different markets
@@ -986,8 +987,18 @@ export function registerRoutes(app: Express) {
             };
           });
           
-          // Add live data to the beginning of results
-          filteredResult = [...liveSuppliers, ...filteredResult];
+          // Add live data to the beginning of results, but deduplicate by name-location-price combination
+          const existingKeys = new Set(filteredResult.map(item => `${item.name}-${item.location}-${item.pricePerKg}`));
+          const uniqueLiveSuppliers = liveSuppliers.filter(supplier => {
+            const key = `${supplier.name}-${supplier.location}-${supplier.pricePerKg}`;
+            if (existingKeys.has(key)) {
+              return false;
+            }
+            existingKeys.add(key);
+            return true;
+          });
+          
+          filteredResult = [...uniqueLiveSuppliers, ...filteredResult];
         } catch (error) {
           console.log('Could not fetch live data, continuing with stored data:', (error as Error).message);
         }
