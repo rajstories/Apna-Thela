@@ -1,0 +1,9 @@
+{
+  "name": "apna-thela-deployment",
+  "version": "1.0.0",
+  "scripts": {
+    "build": "cd BhashaBazaar && npm install && npm run build",
+    "start": "cd BhashaBazaar && npm start",
+    "dev": "cd BhashaBazaar && npm run dev"
+  }
+}
