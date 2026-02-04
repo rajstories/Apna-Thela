@@ -1,0 +1,17 @@
+services:
+  - type: web
+    name: apna-thela
+    runtime: node
+    region: singapore
+    plan: free
+    branch: main
+    rootDir: BhashaBazaar
+    buildCommand: npm ci && npm run build
+    startCommand: npm start
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 10000
+      - key: DATABASE_URL
+        sync: false
